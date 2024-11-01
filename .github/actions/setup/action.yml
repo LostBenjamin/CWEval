@@ -1,10 +1,6 @@
 name: Setup on Linux
 description: Setup basic conda and Python environment on Linux
 
-inputs:
-  deploy_key:
-    description: key to fetch the private dependencies
-    required: true
 
 runs:
   using: composite
@@ -12,7 +8,7 @@ runs:
     - name: set path to dependencies
       id: set-dep-path
       run: |
-        echo "::set-output name=dep-path::requirements/ci.txt"
+        echo "::set-output name=dep-path::requirements/core.txt"
       shell: bash
     - name: set up Python with cache
       uses: actions/setup-python@v4
@@ -25,8 +21,6 @@ runs:
       shell: bash
     - name: install dependencies
       run: |
-        eval `ssh-agent -s`
-        ssh-add - <<< '${{ inputs.deploy_key }}'
         pip install -r ${{ steps.set-dep-path.outputs.dep-path }}
         echo "PYTHONPATH=$PYTHONPATH:${GITHUB_WORKSPACE}" >> $GITHUB_ENV
       shell: bash

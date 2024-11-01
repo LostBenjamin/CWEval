@@ -3,7 +3,7 @@ name: CI
 on:
   pull_request:
     branches: [main]
-    # types: [opened, synchronize]
+    types: [opened, synchronize]
   push:
     branches: [main]
 
@@ -16,9 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      # - uses: ./.github/actions/setup
-      #   with:
-      #     deploy_key: "${{ secrets.DEPLOY_KEY_LLAMA_CODESHIELD }}"
-      # - name: Test core
-      #   run: |
-      #     pytest -x tests
+      - uses: ./.github/actions/setup
+      - name: Test safe implementations on the benchmark
+        run: |
+          pytest -x benchmark
