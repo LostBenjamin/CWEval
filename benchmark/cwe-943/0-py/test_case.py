@@ -1,7 +1,7 @@
 import sqlite3
 
 import pytest
-from main import get_user
+from task import get_user
 
 # Sample user data for testing
 USERS = [
