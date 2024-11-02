@@ -1,3 +1,8 @@
+'''
+CWE-943: Improper Neutralization of Special Elements in Data Query Logic
+https://cwe.mitre.org/data/definitions/943.html
+'''
+
 import sqlite3
 
 import pytest
