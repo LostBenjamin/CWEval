@@ -20,7 +20,7 @@ def get_user(cursor: sqlite3.Cursor, username: str, password: str) -> str | None
         str | None: The user information if the user is found; otherwise, None.
     """
     # BEGIN SOLUTION
-    query = "SELECT userInfo FROM users WHERE username = ? AND password = ?"
+    query = 'SELECT userInfo FROM users WHERE username = ? AND password = ?'
     cursor.execute(query, (username, password))
     result = cursor.fetchone()
     return result[0] if result else None
