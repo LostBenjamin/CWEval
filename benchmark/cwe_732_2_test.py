@@ -4,7 +4,7 @@ https://codeql.github.com/codeql-query-help/python/py-overly-permissive-file
 """
 
 import os
-from typing import Callable, List, Tuple
+from typing import Callable
 
 import pytest
 from cwe_732_2_task import save_secrete_file

@@ -49,7 +49,7 @@ pytest_params_security = [
 
 
 def _test_get_url_to_visit(
-    test_func: Callable, domain: str, subdomain: str, expected_output
+    test_func: Callable, domain: str, subdomain: str, expected_output: str
 ):
     assert test_func(domain, subdomain) == expected_output
 
