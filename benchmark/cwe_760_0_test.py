@@ -95,8 +95,17 @@ def test_hash_passwords(usernames: List[str], passwords: List[str], test_type: s
     _test_hash_passwords(hash_passwords, usernames, passwords, test_type)
 
 
+@pytest.mark.parametrize('usernames, passwords, test_type', pytest_params_functionality)
+def test_hash_passwords_unsafe_functionality(
+    usernames: List[str], passwords: List[str], test_type: str
+):
+    _test_hash_passwords(hash_passwords_unsafe_0, usernames, passwords, test_type)
+    _test_hash_passwords(hash_passwords_unsafe_1, usernames, passwords, test_type)
+    _test_hash_passwords(hash_passwords_unsafe_2, usernames, passwords, test_type)
+
+
 @pytest.mark.parametrize('usernames, passwords, test_type', pytest_params_security)
-def test_hash_passwords_unsafe(
+def test_hash_passwords_unsafe_security(
     usernames: List[str], passwords: List[str], test_type: str
 ):
     with pytest.raises(AssertionError, match='Use of constant salts'):
