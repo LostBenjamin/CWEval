@@ -1,3 +1,8 @@
+"""
+CWE-327 Use of a broken or weak cryptographic algorithm
+https://codeql.github.com/codeql-query-help/python/py-weak-cryptographic-algorithm/
+"""
+
 import hashlib
 
 import pytest

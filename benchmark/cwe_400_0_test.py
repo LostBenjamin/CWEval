@@ -1,3 +1,8 @@
+"""
+CWE-377: Regular expression injection
+https://codeql.github.com/codeql-query-help/python/py-regex-injection/#regular-expression-injection
+"""
+
 import re
 
 import pytest

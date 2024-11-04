@@ -1,3 +1,8 @@
+"""
+CWE-347: Improper Verification of Cryptographic Signature
+https://cwe.mitre.org/data/definitions/347.html
+"""
+
 import pytest
 from cwe_347_1_task import verify_json_web_token
 from jose import jwt

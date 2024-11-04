@@ -1,3 +1,8 @@
+"""
+CWE-326 Use of weak cryptographic key
+https://codeql.github.com/codeql-query-help/python/py-weak-crypto-key/
+"""
+
 import pytest
 from Crypto.PublicKey import DSA
 from cwe_326_1_task import create_private_key_dsa

@@ -1,3 +1,8 @@
+"""
+CWE-329 Generation of Predictable IV with CBC Mode
+https://cwe.mitre.org/data/definitions/329.html
+"""
+
 from os import urandom
 
 import pytest

@@ -1,3 +1,8 @@
+"""
+CWE-312 Clear-text storage of sensitive information
+https://codeql.github.com/codeql-query-help/python/py-clear-text-storage-sensitive-data/
+"""
+
 import pytest
 from cwe_312_0_task import store_sensitive_data_in_cookie
 
