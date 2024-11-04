@@ -2,3 +2,4 @@ fire
 pytest
 pytest-xdist
 wrapt_timeout_decorator
+lxml

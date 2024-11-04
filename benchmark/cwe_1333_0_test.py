@@ -2,7 +2,7 @@
 CWE-1333: ReDoS
 (Original CWE-730)
 https://codeql.github.com/codeql-query-help/python/py-regex-injection
-
+https://github.com/makenowjust-labs/recheck
 """
 
 import os
