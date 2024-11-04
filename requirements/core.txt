@@ -1,5 +1,10 @@
 fire
 pytest
+python-jose
+PyJWT
+cryptography
+argon2-cffi
+pycryptodome
 pytest-xdist
 wrapt_timeout_decorator
 lxml
