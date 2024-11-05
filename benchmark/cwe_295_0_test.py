@@ -1,5 +1,6 @@
 '''
-
+CWE-295: Request without certificate validation
+https://codeql.github.com/codeql-query-help/python/py-request-without-cert-validation
 '''
 
 import warnings
