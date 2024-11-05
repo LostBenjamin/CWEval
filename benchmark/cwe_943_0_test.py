@@ -1,4 +1,6 @@
 '''
+CWE-089: SQL query built from user-controlled sources
+https://codeql.github.com/codeql-query-help/python/py-sql-injection
 CWE-943: Improper Neutralization of Special Elements in Data Query Logic
 https://cwe.mitre.org/data/definitions/943.html
 '''

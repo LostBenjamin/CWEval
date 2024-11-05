@@ -1,7 +1,7 @@
 """
 CWE-760: Use of constant salts
 https://codeql.github.com/codeql-query-help/swift/swift-constant-salt/
-https://www.tomczhen.com/2016/10/10/hashing-security/
+https://www.tomczhen.com/2016/10/10/hashing-security
 """
 
 import hashlib

@@ -1,3 +1,8 @@
+"""
+CWE-643: XPath query built from user-controlled sources
+https://codeql.github.com/codeql-query-help/python/py-xpath-injection
+"""
+
 from typing import Dict, List
 
 import pytest
