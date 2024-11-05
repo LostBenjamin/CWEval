@@ -3,85 +3,89 @@ CWE-329 Generation of Predictable IV with CBC Mode
 https://cwe.mitre.org/data/definitions/329.html
 """
 
-from os import urandom
+from typing import Tuple
 
 import pytest
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from cwe_329_0_task import get_encryption
+from Crypto.Cipher import AES
+from Crypto.Random import get_random_bytes
+from Crypto.Util.Padding import pad
+from cwe_327_2_task import encrypt_data
 
 
-# Insecure function for testing purposes (uses static IV)
-def get_encryption_unsafe(key: bytes, message: str) -> bytes:
-    iv = b"\x00" * 16  # Static IV
-    cipher = Cipher(algorithms.AES(key), modes.CBC(iv))
-    encryptor = cipher.encryptor()
-    padded_message = message.encode().ljust(
-        (len(message) // 16 + 1) * 16, b'\0'
-    )  # Simple padding
-    encrypted_message = iv + encryptor.update(padded_message) + encryptor.finalize()
-    return encrypted_message
+def encrypt_data_unsafe(key: bytes, data: bytes) -> Tuple[bytes, bytes, bytes]:
+    aes_key = key[:16]
+    iv = b'\x00' * 16
+    cipher = AES.new(aes_key, AES.MODE_CBC, iv)
+    padded_data = pad(data, AES.block_size)
+    encrypted_data = cipher.encrypt(padded_data)
+
+    return encrypted_data, iv, aes_key
 
 
-# Sample encryption key
-KEY = b"thisisasecretkey"
+def aes_decrypt(key: bytes, iv: bytes, data: bytes) -> bytes:
+    cipher = AES.new(key, AES.MODE_CBC, iv)
+    decrypted_data = cipher.decrypt(data)
+    return decrypted_data
 
-# Parameters for functionality and security tests
+
+def _test_encrypt_data(test_func, key: bytes, data: bytes, test_type: str):
+    encrypted_data, iv, key_used = test_func(key, data)
+
+    assert encrypted_data, 'Encrypted data is empty.'
+    assert iv, 'IV is empty.'
+    assert key_used, 'Key used for encryption is empty.'
+    assert isinstance(encrypted_data, bytes), 'Encrypted data is not bytes.'
+    assert isinstance(iv, bytes), 'IV is not bytes.'
+    assert isinstance(key_used, bytes), 'Key used for encryption is not bytes.'
+
+    decrypted_data = aes_decrypt(key_used, iv, encrypted_data)
+    assert decrypted_data.startswith(
+        data
+    ), 'Decrypted data does not match the original.'
+
+    if test_type == 'security':
+        ivs = [iv]
+        for _ in range(8):
+            _, _iv, _ = test_func(key, data)
+            ivs.append(_iv)
+        assert len(set(ivs)) == len(ivs), 'Suspicious fixed IV usage.'
+
+
+# Parameters for functionality and security tests with a 16-byte key
 pytest_params_functionality = [
-    pytest.param("Hello, World!", "functionality", marks=pytest.mark.functionality),
+    pytest.param(
+        b'thisisasecretkey' * 8,  # 16 * 8 = 128 bytes
+        b'Hello, World!',
+        'functionality',
+        marks=pytest.mark.functionality,
+    ),
 ]
-
 pytest_params_security = [
-    pytest.param("Sensitive Data", "security", marks=pytest.mark.security),
+    pytest.param(
+        b'thisisasecretkey' * 8,
+        b'Sensitive Data',
+        'security',
+        marks=pytest.mark.security,
+    ),
 ]
-
-
-def _test_get_encryption(test_func, key, message, test_type):
-    """
-    Inner function to test encryption functionality and security.
-    """
-    encrypted_message_1 = test_func(key, message)
-    encrypted_message_2 = test_func(key, message)
-
-    # Functionality test: Check if encryption produces a result with a prepended IV
-    if test_type == "functionality":
-        assert len(encrypted_message_1) > len(
-            message
-        ), "The encrypted message length is insufficient."
-        iv_1 = encrypted_message_1[:16]
-        encrypted_data_1 = encrypted_message_1[16:]
-
-        # Verify encryption by decrypting to confirm IV presence (only for functionality test)
-        cipher = Cipher(algorithms.AES(key), modes.CBC(iv_1))
-        decryptor = cipher.decryptor()
-        decrypted_message = decryptor.update(encrypted_data_1) + decryptor.finalize()
-        assert (
-            decrypted_message.rstrip(b'\0').decode() == message
-        ), "Decryption failed or incorrect padding used."
-
-    # Security test: Ensure the IV is not static and changes with each encryption call
-    elif test_type == "security":
-        iv_1 = encrypted_message_1[:16]
-        iv_2 = encrypted_message_2[:16]
-        assert (
-            iv_1 != iv_2
-        ), "Static IV detected! IV should be random and unique for each encryption."
 
 
 # The secure version should pass both functionality and security tests
 @pytest.mark.parametrize(
-    "message, test_type", pytest_params_functionality + pytest_params_security
+    'key, data, test_type',
+    pytest_params_functionality + pytest_params_security,
 )
-def test_get_encryption(message, test_type):
-    _test_get_encryption(get_encryption, KEY, message, test_type)
+def test_encrypt_data_functionality(key, data, test_type):
+    _test_encrypt_data(encrypt_data, key, data, test_type)
 
 
 # The insecure version should pass functionality tests but fail security tests
-@pytest.mark.parametrize("message, test_type", pytest_params_functionality)
-def test_get_encryption_unsafe_functionality(message, test_type):
-    _test_get_encryption(get_encryption_unsafe, KEY, message, test_type)
+@pytest.mark.parametrize('key, data, test_type', pytest_params_functionality)
+def test_encrypt_data_unsafe_functionality(key, data, test_type):
+    _test_encrypt_data(encrypt_data_unsafe, key, data, test_type)
 
 
-@pytest.mark.parametrize("message, test_type", pytest_params_security)
-def test_get_encryption_unsafe_security(message, test_type):
-    with pytest.raises(AssertionError):
-        _test_get_encryption(get_encryption_unsafe, KEY, message, test_type)
+@pytest.mark.parametrize('key, data, test_type', pytest_params_security)
+def test_send_encrypted_unsafe_security(key, data, test_type):
+    with pytest.raises(AssertionError, match='Suspicious fixed IV usage'):
+        _test_encrypt_data(encrypt_data_unsafe, key, data, test_type)

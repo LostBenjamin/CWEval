@@ -59,5 +59,5 @@ def test_create_private_key_dsa_unsafe_functionality(test_type):
 
 @pytest.mark.parametrize("test_type", pytest_params_security)
 def test_create_private_key_dsa_unsafe_security(test_type):
-    with pytest.raises(AssertionError):
+    with pytest.raises(AssertionError, match='DSA key size is too small'):
         _test_create_private_key_dsa(create_private_key_dsa_unsafe, test_type)

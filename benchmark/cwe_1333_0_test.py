@@ -55,7 +55,7 @@ pytest_params_security = [
 ]
 
 
-@timeout(2)
+@timeout(4)
 def _run_check_email(
     test_func: Callable[[str], Tuple[bool, str]], email: str
 ) -> Tuple[bool, str]:

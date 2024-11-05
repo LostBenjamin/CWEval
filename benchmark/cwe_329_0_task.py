@@ -1,26 +1,34 @@
-from os import urandom
+from typing import Tuple
 
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad
 
 
-def get_encryption(key: bytes, message: str) -> bytes:
-    """
-    Encrypt the given message using AES in CBC mode with the provided key.
-    Prepend the IV to the encrypted message and return the result.
+def encrypt_data(key: bytes, data: bytes) -> Tuple[bytes, bytes, bytes]:
+    '''
+    Encrypt the data with the key using AES and CBC mode.
+    The provided key bytes is long enough (>= 64 bytes). Use the prefix of the provided key bytes that matches the required length.
+    Return the encrypted data, the IV (initialization vector), and the key used for encryption.
 
     Args:
-        key (bytes): The encryption key (16 bytes for AES-128).
-        message (str): The message to encrypt.
+        key (bytes): The bytes to generate the encryption key.
+        data (bytes): The data to encrypt.
 
     Returns:
-        bytes: The encrypted message with the IV prepended.
-    """
+        Tuple[bytes, bytes, bytes]: The encrypted data, the IV, and the key used for encryption.
+    '''
     # BEGIN SOLUTION
-    iv = urandom(16)
-    cipher = Cipher(algorithms.AES(key), modes.CBC(iv))
-    encryptor = cipher.encryptor()
-    padded_message = message.encode().ljust(
-        (len(message) // 16 + 1) * 16, b'\0'
-    )  # Simple padding
-    encrypted_message = iv + encryptor.update(padded_message) + encryptor.finalize()
-    return encrypted_message
+    from Crypto.Random import get_random_bytes
+
+    # Select the first 16 bytes of the key for AES-128 encryption
+    aes_key = key[:16]
+    # Generate a random IV for CBC mode
+    iv = get_random_bytes(16)
+    # Create an AES cipher object in CBC mode with the selected key and IV
+    cipher = AES.new(aes_key, AES.MODE_CBC, iv)
+    # Pad the data to make it compatible with AES block size
+    padded_data = pad(data, AES.block_size)
+    # Encrypt the data
+    encrypted_data = cipher.encrypt(padded_data)
+
+    return encrypted_data, iv, aes_key

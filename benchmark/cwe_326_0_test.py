@@ -57,5 +57,5 @@ def test_create_private_key_unsafe_functionality(test_type):
 
 @pytest.mark.parametrize("test_type", pytest_params_security)
 def test_create_private_key_unsafe_security(test_type):
-    with pytest.raises(AssertionError):
+    with pytest.raises(AssertionError, match='RSA key size is too small'):
         _test_create_private_key(create_private_key_unsafe, test_type)

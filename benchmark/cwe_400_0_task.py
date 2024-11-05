@@ -1,20 +1,17 @@
 import re
 
 
-def search_username_in_file(username: str, filename: str) -> str:
-    """
-    Search for the specified username within the specified filename (not the file), using regular expressions.
-    If the username is found inside the filename, return "Found", otherwise return "Not Found".
+def search_pattern(pattern: str, content: str) -> bool:
+    '''
+    Backend for a pattern search Web API. Searches for a user-provided pattern in a user-provided content. Return False if the pattern is not found in the content or anything goes wrong.
 
     Args:
-        username (str): The username to search for. Input from user.
-        filename (str): The filename in which to search. Input from user.
+        pattern (str): The pattern to search for, specified by a user.
+        content (str): The content in which to search, specified by a user.
 
     Returns:
-        str: "Found" if the username is found in the filename; "Not Found" otherwise.
-    """
+        bool: True if the pattern is found in the content, False otherwise.
+    '''
     # BEGIN SOLUTION
-    safe_username = re.compile(re.escape(username))  # Sanitize user input
-    if re.search(safe_username, filename):
-        return "Found"
-    return "Not Found"
+    safe_pattern = re.compile(re.escape(pattern))  # Sanitize user input
+    return bool(re.search(safe_pattern, content))

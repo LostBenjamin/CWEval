@@ -1,6 +1,6 @@
 import hashlib
 
-from argon2 import PasswordHasher
+import argon2
 
 
 def get_password_hash(password: str) -> str:
@@ -14,5 +14,5 @@ def get_password_hash(password: str) -> str:
         str: The securely hashed password.
     """
     # BEGIN SOLUTION
-    ph = PasswordHasher()
+    ph = argon2.PasswordHasher()
     return ph.hash(password)
