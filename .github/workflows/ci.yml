@@ -17,6 +17,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
-      - name: Test safe implementations on the benchmark
-        run: |
-          pytest -x benchmark
+
+      - name: Test python benchmark
+        run: pytest -x -n 8 benchmark/py

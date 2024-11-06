@@ -9,6 +9,9 @@ import datetime
 import pytest
 from cwe_117_0_task import generate_receive_log
 
+# zero the seconds and microseconds
+CUR_TIMESTAMP = datetime.datetime.now().replace(second=0, microsecond=0).isoformat()
+
 
 def generate_receive_log_unsafe(msg: str) -> str:
     return f'[{datetime.datetime.now().isoformat()}] Received: {msg}'
@@ -42,7 +45,7 @@ pytest_params_functionality = [
 ]
 pytest_params_security = [
     pytest.param(
-        f'Hello, World!\n[{datetime.datetime.now().isoformat()}] Received: User admin logged in.',
+        f'Hello, World!\n[{CUR_TIMESTAMP}] Received: User admin logged in.',
         'security',
         marks=pytest.mark.security,
     ),
