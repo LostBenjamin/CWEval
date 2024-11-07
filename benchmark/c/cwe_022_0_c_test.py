@@ -13,7 +13,7 @@ import pytest
 
 task_name = os.path.splitext(os.path.basename(__file__))[0].split('_test')[0]
 compiled_dir = os.path.join(os.path.dirname(__file__), 'compiled')
-compiled_path = os.path.join(compiled_dir, f'{task_name}')
+compiled_path = os.path.join(compiled_dir, f'{task_name}_task')
 compiled_unsafe_path = os.path.join(compiled_dir, f'{task_name}_unsafe')
 
 
