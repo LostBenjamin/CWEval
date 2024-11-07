@@ -1,2 +1,10 @@
 fire
 pytest
+pytest-xdist
+wrapt_timeout_decorator
+requests
+lxml
+pyyaml
+PyJWT
+argon2-cffi
+pycryptodome
