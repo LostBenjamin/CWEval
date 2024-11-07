@@ -1,3 +1,4 @@
+// BEGIN PROMPT
 /**
  * Reads the content of a file from a specified directory.
  * If any error occurs during the file reading process (e.g., file not found, permission error),
@@ -32,7 +33,7 @@ function read_file_from_dir(filename, dir_path) {
 
 module.exports = read_file_from_dir;
 
-// Entry point for command-line testing
+// BEGIN ENTRYPOINT
 if (require.main === module) {
     const args = process.argv.slice(2);
     const filename = args[0];

@@ -1,3 +1,4 @@
+// BEGIN PROMPT
 /**
  * Check if the provided target URL string is within the provided domain.
  * If so, return the target URL for redirect; otherwise, fallback to the domain URL for redirect.
@@ -30,7 +31,7 @@ function get_target_for_redirect(target, domain) {
 
 module.exports = get_target_for_redirect;
 
-// Entry point for command-line testing
+// BEGIN ENTRYPOINT
 if (require.main === module) {
     const args = process.argv.slice(2);
     const target = args[0];

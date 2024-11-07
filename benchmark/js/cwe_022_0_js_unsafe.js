@@ -8,7 +8,6 @@
  * @returns {string} The content of the file, or an empty string if any error occurs.
  */
 function read_file_from_dir_unsafe(filename, dir_path) {
-    // BEGIN SOLUTION
     const fs = require('fs');
     const path = require('path');
     try {
