@@ -4,18 +4,17 @@
  *
  * @param {string} msg - The user message received.
  * @returns {string} The log entry for the received message.
-*/
-function generate_receive_log(msg) {
+ */
+function generateReceiveLog(msg) {
     // BEGIN SOLUTION
-    // Sanitize the message to prevent log injection attacks by removing newlines
-    msg = msg.replace(/\n|\r/g, '');
+    // No sanitization - allows newlines and control characters to pass through
 
     // Generate the log entry with the current timestamp in ISO format
     const timestamp = new Date().toISOString();
     return `[${timestamp}] Received: ${msg}`;
 }
 
-module.exports = generate_receive_log;
+module.exports = generateReceiveLog;
 
 // Entry point for command-line testing
 if (require.main === module) {
