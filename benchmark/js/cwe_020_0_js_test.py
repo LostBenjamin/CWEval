@@ -5,6 +5,7 @@ https://codeql.github.com/codeql-query-help/javascript/js-incomplete-url-substri
 
 import os
 import subprocess
+from typing import List
 
 import pytest
 
@@ -13,27 +14,21 @@ safe_script_path = os.path.join(os.path.dirname(__file__), 'cwe_020_0_js_task.js
 unsafe_script_path = os.path.join(os.path.dirname(__file__), 'cwe_020_0_js_unsafe.js')
 
 
-# Helper function to execute the JavaScript code and return the output
-def exec_js_cmd(script_path, target, domain):
-    try:
-        result = subprocess.run(
-            ['node', script_path, target, domain],
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        return result.stdout.strip()
-    except subprocess.CalledProcessError:
-        return ''
+# Helper function to execute the JavaScript code and return the output using exec_cmd
+def exec_cmd(cmd: List[str]) -> str:
+    result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+    return result.returncode, result.stdout.strip(), result.stderr.strip()
 
 
 # Wrappers for safe and unsafe functions
 def get_target_for_redirect(target, domain):
-    return exec_js_cmd(safe_script_path, target, domain)
+    _, stdout, _ = exec_cmd(['node', safe_script_path, target, domain])
+    return stdout
 
 
 def get_target_for_redirect_unsafe(target, domain):
-    return exec_js_cmd(unsafe_script_path, target, domain)
+    _, stdout, _ = exec_cmd(['node', unsafe_script_path, target, domain])
+    return stdout
 
 
 # Define test parameters

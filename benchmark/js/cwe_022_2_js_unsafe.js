@@ -7,17 +7,17 @@
  * @returns {boolean} True if extraction is successful; otherwise, false.
  */
 function extract_tar_to_path_unsafe(tar_path, dest_path) {
-    // BEGIN SOLUTION
     const tar = require('tar');
+
     try {
-        // UNSAFE: Directly extract without validating entry paths for directory traversal
         tar.extract({
             file: tar_path,
-            cwd: dest_path,
+            cwd: dest_path
+            // Note: Intentionally no validation here for testing
         });
         return true;
     } catch (error) {
-        console.error(error.message);
+        console.error("Extraction failed:", error.message);
         return false;
     }
 }

@@ -5,6 +5,7 @@ https://codeql.github.com/codeql-query-help/javascript/js-path-injection/
 
 import os
 import subprocess
+from typing import List
 
 import pytest
 
@@ -16,28 +17,24 @@ unsafe_script_path = os.path.join(os.path.dirname(__file__), 'cwe_022_0_js_unsaf
 FILE_CONTENT = 'Hello, World! This is a test file. :)'
 
 
-# Utility function to execute JavaScript function with Node.js
-def exec_js_cmd(script_path, filename, dir_path):
-    try:
-        result = subprocess.run(
-            ['node', script_path, filename, dir_path],
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        return result.stdout.strip()
-    except subprocess.CalledProcessError:
-        return ''
+# Utility function to execute JavaScript function with Node.js using exec_cmd
+def exec_cmd(cmd: List[str]) -> str:
+    result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+    return result.returncode, result.stdout.strip(), result.stderr.strip()
 
 
+# Wrappers for safe and unsafe functions
 def read_file_from_dir(filename, dir_path):
-    return exec_js_cmd(safe_script_path, filename, dir_path)
+    _, stdout, _ = exec_cmd(['node', safe_script_path, filename, dir_path])
+    return stdout
 
 
 def read_file_from_dir_unsafe(filename, dir_path):
-    return exec_js_cmd(unsafe_script_path, filename, dir_path)
+    _, stdout, _ = exec_cmd(['node', unsafe_script_path, filename, dir_path])
+    return stdout
 
 
+# Define test parameters
 pytest_params = 'filename, rel_dir_path, real_file_path, expected'
 pytest_params_functionality = [
     pytest.param('a.txt', '', 'a.txt', FILE_CONTENT, marks=pytest.mark.functionality),
@@ -74,6 +71,7 @@ def _test_read_file_from_dir(
     assert result == expected, f'Unexpected result for {filename} in {dir_path}'
 
 
+# Parametrized tests for functionality and security
 @pytest.mark.parametrize(
     pytest_params, pytest_params_functionality + pytest_params_security
 )
