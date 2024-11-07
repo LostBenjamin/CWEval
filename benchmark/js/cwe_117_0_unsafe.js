@@ -5,7 +5,7 @@
  * @param {string} msg - The user message received.
  * @returns {string} The log entry for the received message.
  */
-function generateReceiveLog(msg) {
+function generate_receive_log_unsafe(msg) {
     // BEGIN SOLUTION
     // No sanitization - allows newlines and control characters to pass through
 
@@ -14,11 +14,11 @@ function generateReceiveLog(msg) {
     return `[${timestamp}] Received: ${msg}`;
 }
 
-module.exports = generateReceiveLog;
+module.exports = generate_receive_log_unsafe;
 
 // Entry point for command-line testing
 if (require.main === module) {
     const args = process.argv.slice(2); // Get command-line arguments
     const msg = args[0] || ''; // Default to an empty message if none provided
-    console.log(generateReceiveLog(msg)); // Output the log entry
+    console.log(generate_receive_log_unsafe(msg)); // Output the log entry
 }
