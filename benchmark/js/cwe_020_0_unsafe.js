@@ -13,12 +13,12 @@
  * @param {string} domain - The domain string, without protocol.
  * @returns {string} The URL string for redirect.
  */
-function get_target_for_redirect(target, domain) {
-    // BEGIN SOLUTION
+function get_target_for_redirect_unsafe(target, domain) {
     try {
         const targetUrl = new URL(target);
 
-        if (targetUrl.hostname === domain || targetUrl.hostname.endsWith(`.${domain}`)) {
+        // UNSAFE: Only check if the domain is a substring of the target URL's hostname
+        if (targetUrl.hostname.includes(domain)) {
             return target;
         } else {
             return `https://${domain}`;
@@ -28,7 +28,7 @@ function get_target_for_redirect(target, domain) {
     }
 }
 
-module.exports = get_target_for_redirect;
+module.exports = get_target_for_redirect_unsafe;
 
 // Entry point for command-line testing
 if (require.main === module) {
@@ -39,5 +39,5 @@ if (require.main === module) {
         console.error("Please provide both the target URL and domain.");
         process.exit(1);
     }
-    console.log(get_target_for_redirect(target, domain));
+    console.log(get_target_for_redirect_unsafe(target, domain));
 }

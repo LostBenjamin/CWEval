@@ -4,7 +4,7 @@
  *
  * @param {string} msg - The user message received.
  * @returns {string} The log entry for the received message.
-*/
+ */
 function generate_receive_log(msg) {
     // BEGIN SOLUTION
     // Sanitize the message to prevent log injection attacks by removing newlines

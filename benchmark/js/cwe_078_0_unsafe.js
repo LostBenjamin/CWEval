@@ -6,11 +6,12 @@
  * @param {string} dir_path - The user-provided directory path to execute the `ls -l` command.
  * @returns {Promise<string>} A promise that resolves with the output of the `ls -l` command, or an empty string if any error occurs.
  */
-function get_ls_result(dir_path) {
+function get_ls_result_unsafe(dir_path) {
     // BEGIN SOLUTION
-    const { execFile } = require('child_process');
+    const { exec } = require('child_process');
     return new Promise((resolve) => {
-        execFile('ls', ['-l', dir_path], (error, stdout) => {
+        // UNSAFE: Directly embedding user input into a shell command
+        exec(`ls -l ${dir_path}`, (error, stdout) => {
             if (error) {
                 resolve(''); // Return an empty string on error
             } else {
@@ -20,11 +21,11 @@ function get_ls_result(dir_path) {
     });
 }
 
-module.exports = get_ls_result;
+module.exports = get_ls_result_unsafe;
 
 // Entry point for command-line testing
 if (require.main === module) {
     const args = process.argv.slice(2);
     const dir_path = args[0] || ''; // Default to an empty string if no directory path is provided
-    get_ls_result(dir_path).then(console.log);
+    get_ls_result_unsafe(dir_path).then(console.log);
 }

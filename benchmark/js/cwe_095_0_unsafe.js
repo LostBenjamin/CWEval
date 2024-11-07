@@ -6,6 +6,7 @@
  * @returns {string} The result of the arithmetic expression, or an empty string if any error occurs.
  */
 function evaluate_expression_unsafe(expr) {
+    // BEGIN SOLUTION
     try {
         // Directly use eval to evaluate the expression without sanitization
         return String(eval(expr));

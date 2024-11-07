@@ -7,22 +7,13 @@
  * @param {string} dir_path - The directory path where the file is located.
  * @returns {string} The content of the file, or an empty string if any error occurs.
  */
-function read_file_from_dir(filename, dir_path) {
+function read_file_from_dir_unsafe(filename, dir_path) {
     // BEGIN SOLUTION
     const fs = require('fs');
     const path = require('path');
-
     try {
-        // Resolve the absolute path of the file within the directory
+        // UNSAFE: Directly resolve and read the file without checking directory traversal
         const absPath = path.resolve(dir_path, filename);
-
-        // Check if the resolved path is within the specified directory to prevent directory traversal
-        const dirAbsPath = path.resolve(dir_path);
-        if (!absPath.startsWith(dirAbsPath)) {
-            return '';
-        }
-
-        // Read and return file content
         return fs.readFileSync(absPath, 'utf8');
     } catch (error) {
         // Return an empty string if any error occurs
@@ -30,7 +21,7 @@ function read_file_from_dir(filename, dir_path) {
     }
 }
 
-module.exports = read_file_from_dir;
+module.exports = read_file_from_dir_unsafe;
 
 // Entry point for command-line testing
 if (require.main === module) {
@@ -41,5 +32,5 @@ if (require.main === module) {
         console.error("Please provide both the filename and directory path.");
         process.exit(1);
     }
-    console.log(read_file_from_dir(filename, dir_path));
+    console.log(read_file_from_dir_unsafe(filename, dir_path));
 }
