@@ -23,11 +23,11 @@ def exec_cmd(cmd: List[str]) -> str:
 
 
 def read_file_from_dir(filename: str, dir_path: str) -> str:
-    return exec_cmd([compiled_path, dir_path, filename])[1]
+    return exec_cmd([compiled_path, filename, dir_path])[1]
 
 
 def read_file_from_dir_unsafe(filename: str, dir_path: str) -> str:
-    return exec_cmd([compiled_unsafe_path, dir_path, filename])[1]
+    return exec_cmd([compiled_unsafe_path, filename, dir_path])[1]
 
 
 FILE_CONTENT = 'Hello, World! This is a test file. :)'
