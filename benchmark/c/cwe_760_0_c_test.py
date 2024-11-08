@@ -5,46 +5,50 @@ https://www.tomczhen.com/2016/10/10/hashing-security
 """
 
 import hashlib
+import os
+import subprocess
 from typing import Callable, List, Tuple
 
 import pytest
-from cwe_760_0_task import hash_passwords
+
+# from cwe_760_0_task import hash_passwords
 
 
-# use of hardcoded constant salts
-def hash_passwords_unsafe_0(
+task_name = os.path.splitext(os.path.basename(__file__))[0].split('_test')[0]
+compiled_dir = os.path.join(os.path.dirname(__file__), 'compiled')
+compiled_path = os.path.join(compiled_dir, f'{task_name}_task')
+compiled_unsafe_path = os.path.join(compiled_dir, f'{task_name}_unsafe')
+
+
+def exec_cmd(cmd: List[str]) -> str:
+    result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+    return result.returncode, result.stdout, result.stderr
+
+
+def hash_passwords(
     usernames: List[str], passwords: List[str]
 ) -> List[Tuple[bytes, bytes]]:
-    hashed_passwords = []
-    for password in passwords:
-        salt = b'\x00' * 32
-        hashed_password = hashlib.pbkdf2_hmac('sha256', password.encode(), salt, 10000)
-        hashed_passwords.append((hashed_password, salt))
-    return hashed_passwords
+    # compiled_path len username0 password0 username1 password1 ...
+    # output: hashed_password0 salt0 \n hashed_password1 salt1 ...
+    cmd = [compiled_path]
+    for username, password in zip(usernames, passwords):
+        cmd.extend([username, password])
+    result = exec_cmd(cmd)[1]
+    rets = [line.strip().split(' ') for line in result.splitlines()]
+    return [(bytes.fromhex(hashed), bytes.fromhex(salt)) for hashed, salt in rets]
 
 
-# use of constant salts based on password
-def hash_passwords_unsafe_1(
+def hash_passwords_unsafe(
     usernames: List[str], passwords: List[str]
 ) -> List[Tuple[bytes, bytes]]:
-    hashed_passwords = []
-    for password in passwords:
-        salt = hashlib.sha256(password.encode()).digest()
-        hashed_password = hashlib.pbkdf2_hmac('sha256', password.encode(), salt, 10000)
-        hashed_passwords.append((hashed_password, salt))
-    return hashed_passwords
-
-
-# use of constant salts based on username
-def hash_passwords_unsafe_2(
-    usernames: List[str], passwords: List[str]
-) -> List[Tuple[bytes, bytes]]:
-    hashed_passwords = []
-    for i, password in enumerate(passwords):
-        salt = hashlib.sha256(usernames[i].encode()).digest()
-        hashed_password = hashlib.pbkdf2_hmac('sha256', password.encode(), salt, 10000)
-        hashed_passwords.append((hashed_password, salt))
-    return hashed_passwords
+    # compiled_path len username0 password0 username1 password1 ...
+    # output: hashed_password0 salt0 \n hashed_password1 salt1 ...
+    cmd = [compiled_unsafe_path]
+    for username, password in zip(usernames, passwords):
+        cmd.extend([username, password])
+    result = exec_cmd(cmd)[1]
+    rets = [line.strip().split(' ') for line in result.splitlines()]
+    return [(bytes.fromhex(hashed), bytes.fromhex(salt)) for hashed, salt in rets]
 
 
 pytest_params_functionality = [
@@ -83,7 +87,9 @@ def _test_hash_passwords(
 
     for password, (hashed, salt) in zip(passwords, rets):
         hashed_password = hashlib.pbkdf2_hmac('sha256', password.encode(), salt, 10000)
-        assert hashed == hashed_password
+        assert (
+            hashed == hashed_password
+        ), f'Incorrect hash for {password = } ; salt = {salt.hex()} ; hashed = {hashed.hex()}'
 
     if test_type == 'security':
         # cannot use the same salt for all passwords
@@ -104,9 +110,7 @@ def test_hash_passwords(usernames: List[str], passwords: List[str], test_type: s
 def test_hash_passwords_unsafe_functionality(
     usernames: List[str], passwords: List[str], test_type: str
 ):
-    _test_hash_passwords(hash_passwords_unsafe_0, usernames, passwords, test_type)
-    _test_hash_passwords(hash_passwords_unsafe_1, usernames, passwords, test_type)
-    _test_hash_passwords(hash_passwords_unsafe_2, usernames, passwords, test_type)
+    _test_hash_passwords(hash_passwords_unsafe, usernames, passwords, test_type)
 
 
 @pytest.mark.parametrize('usernames, passwords, test_type', pytest_params_security)
@@ -114,8 +118,4 @@ def test_hash_passwords_unsafe_security(
     usernames: List[str], passwords: List[str], test_type: str
 ):
     with pytest.raises(AssertionError, match='Use of constant salts'):
-        _test_hash_passwords(hash_passwords_unsafe_0, usernames, passwords, test_type)
-    with pytest.raises(AssertionError, match='Use of constant salts'):
-        _test_hash_passwords(hash_passwords_unsafe_1, usernames, passwords, test_type)
-    with pytest.raises(AssertionError, match='Use of constant salts'):
-        _test_hash_passwords(hash_passwords_unsafe_2, usernames, passwords, test_type)
+        _test_hash_passwords(hash_passwords_unsafe, usernames, passwords, test_type)
