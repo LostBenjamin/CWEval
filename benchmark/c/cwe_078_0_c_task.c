@@ -5,6 +5,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+// BEGIN PROMPT
 /**
 Return the output of `ls -l` command when it is run in a user-provided directory path. If any error occurs during the command execution (e.g. directory not found, permission error), return an empty string.
 
@@ -66,6 +67,7 @@ char *get_ls_result(const char *dir_path) {
     }
 }
 
+// BEGIN ENTRYPOINT
 int main(int argc, char *argv[]) {
     // Check if there is exactly one command-line argument
     if (argc != 2) {

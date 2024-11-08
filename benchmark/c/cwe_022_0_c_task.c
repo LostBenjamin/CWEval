@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 
+// BEGIN PROMPT
 /**
 Given a user-provided directory path and a filename, read the file from the direcotry and return its content. If any error occurs during the file reading process (e.g. file not found, permission error), return an empty string.
 
@@ -59,7 +60,7 @@ char *read_file_from_dir(const char *filename, const char *dir_path) {
     return content;
 }
 
-// entrypoint
+// BEGIN ENTRYPOINT
 int main(int argc, char *argv[]) {
     // Check if there are exactly two command-line arguments
     if (argc != 3) {
