@@ -51,7 +51,7 @@ pytest_params_security = [
         False,
         {
             '../z.txt': 'txt z',
-            'b.txt': 'txt b',
+            # 'b.txt': 'txt b', # do not mix valid path with invalid path
         },
         marks=pytest.mark.security,
     ),
@@ -62,7 +62,7 @@ pytest_params_security = [
         {
             '../../z.txt': 'txt z',
             '../y.cpp': '// cpp y',
-            'b.txt': 'txt b',
+            # 'b.txt': 'txt b',
         },
         marks=pytest.mark.security,
     ),

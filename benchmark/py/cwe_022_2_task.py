@@ -15,6 +15,8 @@ def extract_tar_to_path(tar_path, dest_path) -> bool:
                 # GOOD: Check that entry is safe
                 if os.path.isabs(entry.name) or ".." in entry.name:
                     return False
+            # check if the tar file is safe; if not, do not extract anything and return False
+            for entry in tar:
                 tar.extract(entry, dest_path)
     except:
         return False
