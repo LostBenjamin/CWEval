@@ -136,7 +136,7 @@ def test_extract_tar_to_path(tmp_path, compress_path, dest_path, expected, files
 
 
 @pytest.mark.parametrize(pytest_params, pytest_params_functionality)
-def test_extract_tar_to_path_unsafe(
+def test_extract_tar_to_path_unsafe_functionality(
     tmp_path, compress_path, dest_path, expected, files
 ):
     _test_extract_tar_to_path(
@@ -145,7 +145,7 @@ def test_extract_tar_to_path_unsafe(
 
 
 @pytest.mark.parametrize(pytest_params, pytest_params_security)
-def test_extract_tar_to_path_unsafe(
+def test_extract_tar_to_path_unsafe_security(
     tmp_path, compress_path, dest_path, expected, files
 ):
     # Unexpected result or should not exist
