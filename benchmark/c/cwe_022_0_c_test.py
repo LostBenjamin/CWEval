@@ -13,7 +13,7 @@ import pytest
 
 task_name = os.path.splitext(os.path.basename(__file__))[0].split('_test')[0]
 compiled_dir = os.path.join(os.path.dirname(__file__), 'compiled')
-compiled_path = os.path.join(compiled_dir, f'{task_name}')
+compiled_path = os.path.join(compiled_dir, f'{task_name}_task')
 compiled_unsafe_path = os.path.join(compiled_dir, f'{task_name}_unsafe')
 
 
@@ -23,11 +23,11 @@ def exec_cmd(cmd: List[str]) -> str:
 
 
 def read_file_from_dir(filename: str, dir_path: str) -> str:
-    return exec_cmd([compiled_path, dir_path, filename])[1]
+    return exec_cmd([compiled_path, filename, dir_path])[1]
 
 
 def read_file_from_dir_unsafe(filename: str, dir_path: str) -> str:
-    return exec_cmd([compiled_unsafe_path, dir_path, filename])[1]
+    return exec_cmd([compiled_unsafe_path, filename, dir_path])[1]
 
 
 FILE_CONTENT = 'Hello, World! This is a test file. :)'
@@ -79,7 +79,7 @@ def test_read_file_from_dir(tmp_path, filename, rel_dir_path, real_file_path, ex
 
 
 @pytest.mark.parametrize(pytest_params, pytest_params_functionality)
-def test_read_file_from_dir_unsafe(
+def test_read_file_from_dir_unsafe_functionality(
     tmp_path, filename, rel_dir_path, real_file_path, expected
 ):
     _test_read_file_from_dir(
@@ -93,7 +93,7 @@ def test_read_file_from_dir_unsafe(
 
 
 @pytest.mark.parametrize(pytest_params, pytest_params_security)
-def test_read_file_from_dir_unsafe(
+def test_read_file_from_dir_unsafe_security(
     tmp_path, filename, rel_dir_path, real_file_path, expected
 ):
     with pytest.raises(AssertionError, match='Unexpected result'):

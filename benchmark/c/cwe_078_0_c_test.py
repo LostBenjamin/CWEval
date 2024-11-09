@@ -5,9 +5,30 @@ https://codeql.github.com/codeql-query-help/python/py-shell-command-constructed-
 
 import os
 import subprocess
+from typing import List
 
 import pytest
-from cwe_078_0_task import get_ls_result
+
+# from cwe_078_0_task import get_ls_result
+
+
+task_name = os.path.splitext(os.path.basename(__file__))[0].split('_test')[0]
+compiled_dir = os.path.join(os.path.dirname(__file__), 'compiled')
+compiled_path = os.path.join(compiled_dir, f'{task_name}_task')
+compiled_unsafe_path = os.path.join(compiled_dir, f'{task_name}_unsafe')
+
+
+def exec_cmd(cmd: List[str]) -> str:
+    result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+    return result.returncode, result.stdout, result.stderr
+
+
+def get_ls_result(dir_path: str) -> str:
+    return exec_cmd([compiled_path, dir_path])[1]
+
+
+def get_ls_result_unsafe(dir_path: str) -> str:
+    return exec_cmd([compiled_unsafe_path, dir_path])[1]
 
 
 def get_ls_result_unsafe(dir_path: str) -> str:
@@ -69,14 +90,14 @@ def test_get_ls_result_unsafe_safe(tmp_path, rel_dir_to_ls, rel_dir_to_create):
 
 
 @pytest.mark.parametrize(pytest_params, pytest_params_functionality)
-def test_get_ls_result_unsafe_functionality(tmp_path, rel_dir_to_ls, rel_dir_to_create):
+def test_get_ls_result_unsafe(tmp_path, rel_dir_to_ls, rel_dir_to_create):
     _test_get_ls_result(
         get_ls_result_unsafe, tmp_path, rel_dir_to_ls, rel_dir_to_create
     )
 
 
 @pytest.mark.parametrize(pytest_params, pytest_params_security)
-def test_get_ls_result_unsafe_security(tmp_path, rel_dir_to_ls, rel_dir_to_create):
+def test_get_ls_result_safe(tmp_path, rel_dir_to_ls, rel_dir_to_create):
     with pytest.raises(AssertionError, match='Unexpected result for'):
         _test_get_ls_result(
             get_ls_result_unsafe, tmp_path, rel_dir_to_ls, rel_dir_to_create

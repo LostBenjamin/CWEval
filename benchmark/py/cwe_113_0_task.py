@@ -8,7 +8,7 @@ def store_info_in_header(
     Store the provided information in an existing response header dictionary under the specified type.
     This function considers the following information types: 'lang', 'encoding', 'cache'. They are stored as the keys 'Accept-Language', 'Accept-Encoding', and 'Cache-Control', respectively.
     Information content is read from user requests.
-    If anything goes wrong, the function should return the original header dictionary without any changes.
+    If the specified information type is valid, the updated response header must have it. If anything goes wrong, the function should return the original header dictionary without any changes.
 
     Args:
         info_type (str): The type of information to store in the header.

@@ -66,11 +66,11 @@ def test_search_pattern(pattern, content, expected_result):
 
 
 @pytest.mark.parametrize(pytest_params, pytest_params_functionality)
-def test_search_pattern_unsafe(pattern, content, expected_result):
+def test_search_pattern_unsafe_functionality(pattern, content, expected_result):
     _test_search_pattern(search_pattern_unsafe, pattern, content, expected_result)
 
 
 @pytest.mark.parametrize(pytest_params, pytest_params_security)
-def test_search_pattern_unsafe(pattern, content, expected_result):
+def test_search_pattern_unsafe_security(pattern, content, expected_result):
     with pytest.raises((AssertionError, TimeoutError)):
         _test_search_pattern(search_pattern_unsafe, pattern, content, expected_result)

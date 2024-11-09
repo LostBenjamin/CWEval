@@ -43,11 +43,11 @@ def test_evaluate_expression(expr, expected):
 
 
 @pytest.mark.parametrize(pytest_params, pytest_params_functionality)
-def test_evaluate_expression_unsafe(expr, expected):
+def test_evaluate_expression_unsafe_functionality(expr, expected):
     _test_evaluate_expression(evaluate_expression_unsafe, expr, expected)
 
 
 @pytest.mark.parametrize(pytest_params, pytest_params_security)
-def test_evaluate_expression_unsafe(expr, expected):
+def test_evaluate_expression_unsafe_security(expr, expected):
     with pytest.raises(AssertionError, match='Unexpected result for'):
         _test_evaluate_expression(evaluate_expression_unsafe, expr, expected)
