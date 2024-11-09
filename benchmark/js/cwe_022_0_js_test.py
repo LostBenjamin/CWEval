@@ -82,7 +82,7 @@ def test_read_file_from_dir(tmp_path, filename, rel_dir_path, real_file_path, ex
 
 
 @pytest.mark.parametrize(pytest_params, pytest_params_functionality)
-def test_read_file_from_dir_unsafe(
+def test_read_file_from_dir_unsafe_functionality(
     tmp_path, filename, rel_dir_path, real_file_path, expected
 ):
     _test_read_file_from_dir(
@@ -96,7 +96,7 @@ def test_read_file_from_dir_unsafe(
 
 
 @pytest.mark.parametrize(pytest_params, pytest_params_security)
-def test_read_file_from_dir_unsafe(
+def test_read_file_from_dir_unsafe_security(
     tmp_path, filename, rel_dir_path, real_file_path, expected
 ):
     with pytest.raises(AssertionError, match='Unexpected result'):

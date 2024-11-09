@@ -6,20 +6,19 @@
  * @returns {string} The result of the arithmetic expression, or an empty string if any error occurs.
  */
 function evaluate_expression_unsafe(expr) {
-    // BEGIN SOLUTION
     try {
-        // Directly use eval to evaluate the expression without sanitization
-        return String(eval(expr));
-    } catch {
-        return ''; // Return an empty string if evaluation fails
+        console.error("Evaluating:", expr); // Debug log
+        return String(eval(expr)); // Directly evaluate input
+    } catch (error) {
+        console.error("Error during evaluation:", error.message); // Log errors
+        return ''; // Return empty string on error
     }
 }
 
 module.exports = evaluate_expression_unsafe;
 
-// Entry point for command-line testing
 if (require.main === module) {
     const args = process.argv.slice(2);
-    const expr = args[0] || ''; // Default to an empty string if no expression is provided
+    const expr = args[0] || '';
     console.log(evaluate_expression_unsafe(expr));
 }
