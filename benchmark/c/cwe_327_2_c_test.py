@@ -3,28 +3,38 @@ CWE-327 Use of a broken or weak cryptographic algorithm
 https://codeql.github.com/codeql-query-help/python/py-weak-cryptographic-algorithm/
 """
 
-from typing import Tuple
+import os
+import subprocess
+from typing import List, Tuple
 
 import pytest
 from Crypto.Cipher import AES, DES
 from Crypto.Random import get_random_bytes
 from Crypto.Util.Padding import pad
-from cwe_327_2_task import encrypt_data
+
+# from cwe_327_2_task import encrypt_data
+
+task_name = os.path.splitext(os.path.basename(__file__))[0].split('_test')[0]
+compiled_dir = os.path.join(os.path.dirname(__file__), 'compiled')
+compiled_path = os.path.join(compiled_dir, f'{task_name}_task')
+compiled_unsafe_path = os.path.join(compiled_dir, f'{task_name}_unsafe')
+
+
+def exec_cmd(cmd: List[str]) -> str:
+    result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+    return result.returncode, result.stdout, result.stderr
+
+
+def encrypt_data(key: bytes, data: bytes) -> Tuple[bytes, bytes, bytes]:
+    out = exec_cmd([compiled_path, key.hex(), data.hex()])[1]
+    encrypted_data, iv, key_used = out.splitlines()
+    return bytes.fromhex(encrypted_data), bytes.fromhex(iv), bytes.fromhex(key_used)
 
 
 def encrypt_data_unsafe(key: bytes, data: bytes) -> Tuple[bytes, bytes, bytes]:
-    # Select the first 8 bytes of the key for DES encryption
-    des_key = key[:8]
-    # Generate a random IV for CBC mode
-    iv = get_random_bytes(8)
-    # Create a DES cipher object in CBC mode with the selected key and IV
-    cipher = DES.new(des_key, DES.MODE_CBC, iv)
-    # Pad the data to make it compatible with DES block size
-    padded_data = pad(data, DES.block_size)
-    # Encrypt the data
-    encrypted_data = cipher.encrypt(padded_data)
-
-    return encrypted_data, iv, des_key
+    out = exec_cmd([compiled_unsafe_path, key.hex(), data.hex()])[1]
+    encrypted_data, iv, key_used = out.splitlines()
+    return bytes.fromhex(encrypted_data), bytes.fromhex(iv), bytes.fromhex(key_used)
 
 
 def aes_decrypt(key: bytes, iv: bytes, data: bytes) -> bytes:
