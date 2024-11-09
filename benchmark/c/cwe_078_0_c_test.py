@@ -90,14 +90,14 @@ def test_get_ls_result_unsafe_safe(tmp_path, rel_dir_to_ls, rel_dir_to_create):
 
 
 @pytest.mark.parametrize(pytest_params, pytest_params_functionality)
-def test_get_ls_result_unsafe(tmp_path, rel_dir_to_ls, rel_dir_to_create):
+def test_get_ls_result_unsafe_functionality(tmp_path, rel_dir_to_ls, rel_dir_to_create):
     _test_get_ls_result(
         get_ls_result_unsafe, tmp_path, rel_dir_to_ls, rel_dir_to_create
     )
 
 
 @pytest.mark.parametrize(pytest_params, pytest_params_security)
-def test_get_ls_result_safe(tmp_path, rel_dir_to_ls, rel_dir_to_create):
+def test_get_ls_result_unsafe_security(tmp_path, rel_dir_to_ls, rel_dir_to_create):
     with pytest.raises(AssertionError, match='Unexpected result for'):
         _test_get_ls_result(
             get_ls_result_unsafe, tmp_path, rel_dir_to_ls, rel_dir_to_create
