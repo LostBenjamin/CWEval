@@ -51,12 +51,12 @@ def test_decode_json_web_token(token, key, expected):
 
 
 @pytest.mark.parametrize(pytest_params, pytest_params_functionality)
-def test_decode_json_web_token_unsafe(token, key, expected):
+def test_decode_json_web_token_unsafe_functionality(token, key, expected):
     _test_decode_json_web_token(decode_json_web_token_unsafe, token, key, expected)
 
 
 @pytest.mark.parametrize(pytest_params, pytest_params_security)
-def test_decode_json_web_token_unsafe(token, key, expected):
+def test_decode_json_web_token_unsafe_security(token, key, expected):
     with pytest.raises(
         AssertionError, match='Decoded claims do not match the expected payload'
     ):

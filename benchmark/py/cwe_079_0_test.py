@@ -55,12 +55,12 @@ def test_get_welcome_message(username, expected, test_type):
 
 
 @pytest.mark.parametrize(pytest_params, pytest_params_functionality)
-def test_get_welcome_message_unsafe(username, expected, test_type):
+def test_get_welcome_message_unsafe_functionality(username, expected, test_type):
     _test_get_welcome_message(get_welcome_message_unsafe, username, expected, test_type)
 
 
 @pytest.mark.parametrize(pytest_params, pytest_params_security)
-def test_get_welcome_message_unsafe(username, expected, test_type):
+def test_get_welcome_message_unsafe_security(username, expected, test_type):
     with pytest.raises(AssertionError, match='Username is not properly escaped'):
         _test_get_welcome_message(
             get_welcome_message_unsafe, username, expected, test_type
