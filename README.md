@@ -39,6 +39,7 @@ export PYTHONPATH=$PYTHONPATH:$(pwd)
 
 ```bash
 mamba install libarchive
+sudo apt install libjwt-dev
 ```
 
 
