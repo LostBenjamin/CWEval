@@ -25,7 +25,7 @@ def get_student_info(
         </student>
     </students>
 
-    Construct a XPath query and use it to search.
+    We can construct a XPath query and use it to search.
 
 
     Args:
