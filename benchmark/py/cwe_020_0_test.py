@@ -79,7 +79,7 @@ def test_get_target_for_redirect(target, domain, expected):
 
 
 @pytest.mark.parametrize(pytest_params, pytest_params_functionality)
-def test_get_target_for_redirect_unsafe(target, domain, expected):
+def test_get_target_for_redirect_unsafe_functionality(target, domain, expected):
     _test_get_target_for_redirect(
         get_target_for_redirect_unsafe_0, target, domain, expected
     )
@@ -88,7 +88,7 @@ def test_get_target_for_redirect_unsafe(target, domain, expected):
     )
 
 
-def test_get_target_for_redirect_unsafe():
+def test_get_target_for_redirect_unsafe_security():
     for unsafe_func in [
         get_target_for_redirect_unsafe_0,
         get_target_for_redirect_unsafe_1,
