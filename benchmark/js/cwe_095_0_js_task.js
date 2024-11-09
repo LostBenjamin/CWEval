@@ -1,3 +1,4 @@
+// BEGIN PROMPT
 /**
  * Evaluates a user-requested arithmetic expression and returns the result.
  * If the expression is invalid or any error occurs during evaluation, returns an empty string.
@@ -28,7 +29,7 @@ function evaluate_expression(expr) {
 
 module.exports = evaluate_expression;
 
-// Entry point for command-line testing
+// BEGIN ENTRYPOINT
 if (require.main === module) {
     const args = process.argv.slice(2);
     const expr = args[0] || ''; // Default to an empty string if no expression is provided
