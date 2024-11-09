@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <openssl/aes.h>
+#include <openssl/des.h>
 
 // Function to pad data to AES block size
 unsigned char* pad_data(const unsigned char* data, size_t data_len, size_t* padded_len) {

@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <openssl/aes.h>
+#include <openssl/des.h>
 
 #define DES_BLOCK_SIZE 8
 #define DES_KEY_SIZE 8
