@@ -20,7 +20,7 @@ Examples:
 char* get_url_to_visit(const char* domain, const char* subdomain_prefix) {
     // BEGIN SOLUTION
     static char url[MAX_URL_LENGTH];
-    regex_t regex;
+    // regex_t regex;
 
     // Compile regex to match valid subdomain pattern
     // if (regcomp(&regex, "^[a-zA-Z0-9.-]+$", REG_EXTENDED)) {
@@ -38,7 +38,7 @@ char* get_url_to_visit(const char* domain, const char* subdomain_prefix) {
             snprintf(url, MAX_URL_LENGTH, "https://%s", domain);
     }
 
-    regfree(&regex);
+    // regfree(&regex);
     return url;
 }
 
