@@ -27,9 +27,6 @@ pip install -r requirements/core.txt
 pip install -r requirements/dev.txt
 pre-commit install
 
-# 6. Install dependencies for evaluation
-pip install -r requirements/eval.txt
-
 # Before running the code, append the repo root path to PYTHONPATH
 export PYTHONPATH=$PYTHONPATH:$(pwd)
 ```
