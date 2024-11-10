@@ -1,3 +1,8 @@
+"""
+CWE-377: Regular expression injection
+https://codeql.github.com/codeql-query-help/javascript/js-regex-injection/#regular-expression-injection
+"""
+
 import json
 import os
 import subprocess
