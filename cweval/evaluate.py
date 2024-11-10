@@ -165,12 +165,36 @@ class Evaler:
         with open(os.path.join(self.eval_path, 'res_all.json'), 'w') as f:
             json.dump(all_res, f, indent=2)
 
-    def report_pass_at_k(self, k: int = 1) -> None:
+    def _filename_to_lang(self, path: str) -> str:
+        # path: evals/eval_241110_014704/generated_X/<...>/cwe_022_0_c_test.py -> c
+        # evals/eval_241110_014704/generated_X/<...>/cwe_022_0_test.py -> py
+        filename = os.path.splitext(os.path.basename(path))[0]
+        lang = filename.split('_')[-2]
+        if lang.isdigit():
+            return 'py'
+        return lang
+
+    def report_pass_at_k(self, k: int = 1, lang: str = '', mode: str = '') -> None:
+        if mode == 'auto':
+            for lang in ['c', 'py']:
+                for k in [1, 3, 10]:
+                    self.report_pass_at_k(k, lang)
+
         all_res_json_path = os.path.join(self.eval_path, 'res_all.json')
         with open(all_res_json_path, 'r') as f:
             all_res = json.load(f)
 
+        # filter by lang
+        if lang:
+            all_res = {
+                k: v for k, v in all_res.items() if self._filename_to_lang(k) == lang
+            }
+
         num_paths = len(all_res)
+        if num_paths == 0:
+            print(f'No case found for {lang = }')
+            return
+
         functional_patks: List[float] = []
         secure_patks: List[float] = []
         func_secure_patks: List[float] = []
@@ -200,7 +224,7 @@ class Evaler:
         func_secure_rate = sum(func_secure_patks) / num_paths * 100
 
         print(f'=' * 16)
-        print(f'pass@{k}')
+        print(f'pass@{k}\t{lang}')
         print(f'functional@{k}\t{functional_rate:.2f}')
         print(f'secure@{k}\t{secure_rate:.2f}')
         print(f'functional_secure@{k}\t{func_secure_rate:.2f}')
@@ -272,14 +296,22 @@ class Evaler:
             user=self.docker_user,
         )
         # prepare the files in the container
-        evals_path_in_docker = os.path.join(self.repo_path_in_docker, 'evals')
+        evals_path_in_docker = os.path.join(
+            self.repo_path_in_docker, 'evals'
+        )  # /home/ubuntu/CWEval/evals
         eval_path_in_docker = os.path.join(
             evals_path_in_docker, os.path.basename(self.eval_path)
+        )  # /home/ubuntu/CWEval/evals/eval_241110_014704
+        container.exec_cmd(
+            f'''bash -c "
+mkdir -p {evals_path_in_docker};
+rm -rf {eval_path_in_docker}
+"'''
         )
-        container.exec_cmd(f'mkdir -p {evals_path_in_docker}')
-        container.exec_cmd(f'rm -rf {eval_path_in_docker}')
-        container.copy_to(self.eval_path, evals_path_in_docker)
-        log_path_in_docker = os.path.join(eval_path_in_docker, 'run_tests.log')
+        container.copy_to(self.eval_path, eval_path_in_docker)
+        log_path_in_docker = os.path.join(
+            eval_path_in_docker, 'run_tests.log'
+        )  # /home/ubuntu/CWEval/evals/eval_241110_014704/run_tests.log
         # run the tests
         cmd = f'''set -e;
 source /home/{self.docker_user}/miniforge3/bin/activate;
@@ -287,16 +319,21 @@ cd {self.repo_path_in_docker};
 source .env;
 python cweval/evaluate.py run_tests --eval_path {eval_path_in_docker} --num_proc {self.num_proc} 2>&1 | tee {log_path_in_docker};
 '''
+        cmd = f'bash -c "{cmd}"'
         exit_code, stdout, stderr = container.exec_cmd(cmd)
-        assert exit_code == 0, f'{exit_code = }'
+        assert exit_code == 0, f'{exit_code = }\nstdout:\n{stdout}\n\nstderr:\n{stderr}'
         # copy the log file and results
-        log_path = os.path.join(self.eval_path, 'run_tests.log')
+        log_path = os.path.join(
+            self.eval_path, 'run_tests.log'
+        )  # evals/eval_241110_014704/run_tests.log
         container.copy_from(log_path_in_docker, log_path)
         for generated_path in self.generated_paths:
-            res_json_path = os.path.join(generated_path, 'res.json')
+            res_json_path = os.path.join(
+                generated_path, 'res.json'
+            )  # evals/eval_241110_014704/generated_X/res.json
             res_json_path_in_docker = os.path.join(
                 eval_path_in_docker, os.path.relpath(res_json_path, self.eval_path)
-            )
+            )  # /home/ubuntu/CWEval/evals/eval_241110_014704/generated_X/res.json
             container.copy_from(res_json_path_in_docker, res_json_path)
 
     def pipeline(self) -> None:
@@ -304,7 +341,7 @@ python cweval/evaluate.py run_tests --eval_path {eval_path_in_docker} --num_proc
         self.compile_parsed()
         self.run_tests_in_docker(prepare=False)
         self._merge_results()
-        self.report_pass_at_k()
+        self.report_pass_at_k(mode='auto')
 
 
 if __name__ == '__main__':
