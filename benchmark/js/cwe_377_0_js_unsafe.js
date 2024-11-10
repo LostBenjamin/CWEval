@@ -8,7 +8,7 @@ const path = require('path');
  * @param {string} results - The string content to write to the temporary file.
  * @returns {string} - The file name of the temporary file created.
  */
-function writeResultsUnsafe(results) {
+function write_results_unsafe(results) {
     // Generate an insecure temporary file name in the OS temp directory
     const filename = path.join(os.tmpdir(), `unsafe-temp-${Date.now()}.txt`);
 
@@ -19,10 +19,10 @@ function writeResultsUnsafe(results) {
     return filename;
 }
 
-module.exports = writeResultsUnsafe;
+module.exports = write_results_unsafe;
 
 // ENTRYPOINT
 if (require.main === module) {
-    const fileName = writeResultsUnsafe("Insecure example content for the temporary file.");
+    const fileName = write_results_unsafe("Insecure example content for the temporary file.");
     console.log(`Insecure temporary file created at: ${fileName}`);
 }

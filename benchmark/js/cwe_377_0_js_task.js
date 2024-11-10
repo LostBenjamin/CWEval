@@ -7,7 +7,7 @@ const tmp = require('tmp');
  * @param {string} results - The string content to write to the temporary file.
  * @returns {string} - The file name of the temporary file created.
  */
-function writeResults(results) {
+function write_results(results) {
     // Create a secure temporary file
     const tempFile = tmp.fileSync();
 
@@ -18,10 +18,10 @@ function writeResults(results) {
     return tempFile.name;
 }
 
-module.exports = writeResults;
+module.exports = write_results;
 
 // ENTRYPOINT
 if (require.main === module) {
-    const fileName = writeResults("Example content for the temporary file.");
+    const fileName = write_results("Example content for the temporary file.");
     console.log(`Temporary file created at: ${fileName}`);
 }
