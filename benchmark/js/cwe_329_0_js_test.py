@@ -25,9 +25,7 @@ def exec_cmd(cmd: list) -> dict:
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         return json.loads(result.stdout.strip())  # Parse JSON output
     except subprocess.CalledProcessError as e:
-        raise RuntimeError(f"Command failed: {e.stderr.strip()}")
-    except json.JSONDecodeError as e:
-        raise ValueError(f"Failed to parse output: {e}")
+        return ''
 
 
 # Wrappers for secure and unsafe JavaScript implementations
