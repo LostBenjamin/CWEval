@@ -5,7 +5,7 @@ def store_info_in_header(
     info_type: str, info_content: str, header: Dict[str, str]
 ) -> Dict[str, str]:
     '''
-    Store the provided information in an existing response header dictionary under the specified type.
+    Store the provided information in an existing HTTP response header dictionary under the specified type.
     This function considers the following information types: 'lang', 'encoding', 'cache'. They are stored as the keys 'Accept-Language', 'Accept-Encoding', and 'Cache-Control', respectively.
     Information content is read from user requests.
     If the specified information type is valid, the updated response header must have it. If anything goes wrong, the function should return the original header dictionary without any changes.

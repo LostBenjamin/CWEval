@@ -18,7 +18,20 @@ RUN set -ex; source ~/miniforge3/bin/activate; conda activate cweval; \
 RUN set -ex; source ~/miniforge3/bin/activate; conda activate cweval; \
     mamba install -y libarchive; \
     rm -rf /home/ubuntu/.cache
+RUN set -ex; sudo apt update; \
+    sudo apt install -y libjwt-dev; \
+    rm -rf /home/ubuntu/.cache
 
-RUN sudo apt update && apt install -y libjwt-dev; rm -rf /home/ubuntu/.cache
+# js
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+RUN NVM_CONFIG='export NVM_DIR="$HOME/.nvm"\n[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm\n[ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"  # This loads nvm bash_completion' \
+    && (grep -qxF "$NVM_CONFIG" ~/.zshrc || echo -e "$NVM_CONFIG" >> ~/.zshrc) \
+    && (grep -qxF "$NVM_CONFIG" ~/.bashrc || echo -e "$NVM_CONFIG" >> ~/.bashrc)
+RUN set -ex; export NVM_DIR="$HOME/.nvm"; \
+    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"; \
+    nvm install --lts; \
+    nvm use --lts; \
+    npm install -g escape-html node-rsa argon2 escape-string-regexp lodash
+
 
 CMD [ "zsh" ]
