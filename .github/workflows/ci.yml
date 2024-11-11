@@ -19,4 +19,4 @@ jobs:
       - uses: ./.github/actions/setup
 
       - name: Test python benchmark
-        run: pytest -x -n 8 benchmark/py
+        run: pytest -x -n 8 benchmark/core/py
