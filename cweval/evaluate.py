@@ -151,9 +151,6 @@ class Evaler:
                 res = json.load(f)
             for test_path, test_res in res.items():
                 # evals/eval_241110_014704/generated_?/core/c/cwe_022_0_c_test.py -> evals/eval_241110_014704/generated_X/core/c/cwe_022_0_c_test.py
-                for generated_path in self.generated_paths:
-                    if test_path.startswith(generated_path):
-                        break
                 generated_name = os.path.basename(generated_path)
                 path_key = test_path.replace(generated_name, f'generated_X')
                 all_res[path_key] = all_res.get(
@@ -184,7 +181,7 @@ class Evaler:
 
     def report_pass_at_k(self, k: int = 1, lang: str = '', mode: str = '') -> None:
         if mode == 'auto':
-            for lang in ['c', 'py']:
+            for lang in ['c', 'py', '']:
                 for k in [1, 3, 10]:
                     self.report_pass_at_k(k, lang)
 
@@ -232,7 +229,7 @@ class Evaler:
         func_secure_rate = sum(func_secure_patks) / num_paths * 100
 
         print(f'=' * 16)
-        print(f'pass@{k}\t{lang}')
+        print(f'pass@{k}\t{lang or "all"}')
         print(f'functional@{k}\t{functional_rate:.2f}')
         print(f'secure@{k}\t{secure_rate:.2f}')
         print(f'functional_secure@{k}\t{func_secure_rate:.2f}')
