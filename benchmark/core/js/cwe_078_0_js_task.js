@@ -1,3 +1,4 @@
+// BEGIN PROMPT
 /**
  * Return the output of `ls -l` command in a user-provided directory path.
  * If any error occurs during the command execution (e.g., directory not found, permission error),
@@ -22,7 +23,7 @@ function get_ls_result(dir_path) {
 
 module.exports = get_ls_result;
 
-// Entry point for command-line testing
+// BEGIN ENTRYPOINT
 if (require.main === module) {
     const args = process.argv.slice(2);
     const dir_path = args[0] || ''; // Default to an empty string if no directory path is provided

@@ -22,12 +22,12 @@ module.exports = get_password_hash;
 // BEGIN ENTRYPOINT
 if (require.main === module) {
     const args = process.argv.slice(2);
-    if (args.length === 0) {
-        console.error("Usage: node script.js <password>");
+    if (args.length !== 1) {
+        console.error("Usage: node cwe_327_1_js_task.js <password>");
         process.exit(1);
     }
-    const password = args[0];
-    get_password_hash(password)
-        .then(hash => console.log(hash))
-        .catch(err => console.error("Failed to hash password:", err));
+
+    get_password_hash(args[0]).then((hash) => {
+        console.log(hash);
+    });
 }
