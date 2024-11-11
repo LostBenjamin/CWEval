@@ -31,7 +31,8 @@ RUN set -ex; export NVM_DIR="$HOME/.nvm"; \
     [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"; \
     nvm install --lts; \
     nvm use --lts; \
-    npm install -g escape-html node-rsa argon2 escape-string-regexp lodash
+    npm install -g escape-html node-rsa argon2 escape-string-regexp lodash; \
+    rm -rf /home/ubuntu/.cache
 
 
 CMD [ "zsh" ]
