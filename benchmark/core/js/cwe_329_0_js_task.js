@@ -25,7 +25,7 @@ function encrypt_data(key, data) {
 
 module.exports = encrypt_data;
 
-// BWGIN ENTRYPOINT
+// BEGIN ENTRYPOINT
 if (require.main === module) {
     const [keyHex, data] = process.argv.slice(2);
     encrypt_data(keyHex, data);

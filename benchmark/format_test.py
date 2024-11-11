@@ -22,10 +22,6 @@ def test_task_format():
             with open(task_file_path, 'r') as f:
                 task_code = f.read()
 
-            # TODO
-            if lang == 'js':
-                continue
-
             assert (
                 begin_solution_anchor in task_code
             ), f'No {begin_solution_anchor = } found in {task_file_path}'
