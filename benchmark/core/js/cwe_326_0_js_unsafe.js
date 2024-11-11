@@ -2,7 +2,6 @@
 /**
  * Generate a private RSA key, export it using the PEM format, and return it as a string.
  *
- * Note: Use node-rsa to generate the key.
  *
  * @returns {string} The RSA private key in PEM format.
  */

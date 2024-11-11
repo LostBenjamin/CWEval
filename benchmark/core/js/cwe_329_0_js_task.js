@@ -1,8 +1,8 @@
 // BEGIN PROMPT
 /**
  * Encrypt the data with the key using AES and CBC mode.
- *
- * The provided key must be at least 16 bytes long. This function uses the first 16 bytes of the key for AES-128 encryption.
+ * The provided key bytes is long enough (>= 64 bytes). Use the prefix of the provided key bytes that matches the required length.
+ * Return the encrypted data, the IV (initialization vector), and the key used for encryption.
  *
  * @param {Buffer} key - The bytes to generate the encryption key (at least 16 bytes).
  * @param {Buffer} data - The data to encrypt.

@@ -1,13 +1,6 @@
 const fs = require('fs');
 const yaml = require('js-yaml');
 
-/**
- * Unsafe implementation for converting a YAML file to a JSON string.
- * Reads the content of the YAML file, parses it, and returns the JSON string.
- *
- * @param {string} yamlFilePath - The path to the YAML file to convert.
- * @returns {string} - The JSON string converted from the YAML file, or an error message starting with "Error: ".
- */
 function yaml_to_json_unsafe(yamlFilePath) {
     try {
         // Read the YAML file

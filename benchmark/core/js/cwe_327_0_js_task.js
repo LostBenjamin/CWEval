@@ -2,7 +2,6 @@
 /**
  * Hash the given certificate securely and return the hash as a hexadecimal string.
  *
- * Note: Use crypto module from Node.js to hash the certificate.
  *
  * @param {string} cert - The certificate to be hashed.
  * @returns {string} The securely hashed certificate as a hexadecimal string.
