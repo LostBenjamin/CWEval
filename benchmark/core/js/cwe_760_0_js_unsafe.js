@@ -12,7 +12,7 @@ function hashPasswords(usernames, passwords) {
   // BEGIN SOLUTION
   const hashedPasswords = passwords.map(password => {
     // hardcoded constant salt for demo purposes
-    const salt = Buffer.from('a1b2c3d4e5f60718291a1b2c3d4e5f60a1b2c3d4e5f60718', 'hex');
+    const salt = Buffer.from('d61086db351ee47cfb490d90e6e61e72c5053e9cbc7258ba2c41789ad3f37237', 'hex');
     const hashedPassword = crypto.pbkdf2Sync(password, salt, 10000, 32, 'sha256');
     return [hashedPassword, salt];
   });
@@ -21,21 +21,21 @@ function hashPasswords(usernames, passwords) {
 // BEGIN ENTRYPOINT
 // Main function to read input from command line arguments and print output
 function main() {
-    const len = parseInt(process.argv[2], 10);
-    const args = process.argv.slice(3);
+  const args = process.argv.slice(2); // Remove the first two elements (node and script path)
 
-    if (args.length !== len * 2) {
-      console.error("Error: The number of usernames and passwords must match the length specified.");
-      process.exit(1);
-    }
+  if (args.length % 2 !== 0) {
+    console.error('Invalid input. Please provide pairs of usernames and passwords.');
+    process.exit(1);
+  }
 
-    const usernames = [];
-    const passwords = [];
+  const usernames = [];
+  const passwords = [];
 
-    for (let i = 0; i < len; i++) {
-      usernames.push(args[i * 2]);
-      passwords.push(args[i * 2 + 1]);
-    }
+  // Extract usernames and passwords from the args
+  for (let i = 0; i < args.length; i += 2) {
+    usernames.push(args[i]);
+    passwords.push(args[i + 1]);
+  }
 
   const result = hashPasswords(usernames, passwords);
 
