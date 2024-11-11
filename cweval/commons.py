@@ -3,8 +3,14 @@ import os
 import subprocess
 from typing import Any, Callable, List, Tuple
 
+import fire
 import numpy as np
 
+LANGS_COMPILE = ['c', 'cpp']
+LANGS_RUN = ['py', 'js']
+LANS = LANGS_COMPILE + LANGS_RUN
+
+COMPILE_DIR = 'compiled'
 BENCHMARK_DIR = 'benchmark'
 
 
@@ -119,8 +125,9 @@ def exec_cmd_shell(cmd: str, check: bool = True) -> Tuple[int, str, str]:
     return result.returncode, result.stdout, result.stderr
 
 
-def compile_c(src_path: str, compiled_path: str, check: bool = True) -> None:
-    os.makedirs(os.path.dirname(compiled_path), exist_ok=True)
+def compile_c(
+    src_path: str, compiled_path: str, check: bool = True
+) -> Tuple[int, str, str]:
     lib_options = [
         '-lsqlite3',
         '-ljwt',
@@ -135,21 +142,63 @@ def compile_c(src_path: str, compiled_path: str, check: bool = True) -> None:
     returncode, stdout, stderr = exec_cmd_shell(cmd_str, check)
     if returncode != 0:
         print(f'Error compiling {src_path}:\n{stderr}', flush=True)
+    return returncode, stdout, stderr
 
 
-def compile_c_list(
+def compile_src(
+    src_path: str, compiled_path: str, check: bool = True
+) -> Tuple[int, str, str]:
+    os.makedirs(os.path.dirname(compiled_path), exist_ok=True)
+    lang = os.path.splitext(src_path)[1][1:]
+    assert lang in LANGS_COMPILE, f'Unknown language for compile: {lang} for {src_path}'
+    return {
+        'c': compile_c,
+    }[
+        lang
+    ](src_path, compiled_path, check)
+
+
+def compile_list(
     src_path_list: List[str],
     compiled_path_list: List[str],
     check: bool = True,
     num_proc: int = 8,
-) -> None:
+) -> List[Tuple[int, str, str]]:
     assert len(src_path_list) == len(compiled_path_list)
+    rets: List[Tuple[int, str, str]] = []
     if num_proc == 1:
         for src_path, compiled_path in zip(src_path_list, compiled_path_list):
-            compile_c(src_path, compiled_path, check)
+            ret = compile_c(src_path, compiled_path, check)
+            rets.append(ret)
     else:
         with mp.Pool(num_proc) as pool:
-            pool.starmap(
+            rets = pool.starmap(
                 compile_c,
                 zip(src_path_list, compiled_path_list, [check] * len(src_path_list)),
             )
+    return rets
+
+
+def compile_all_in(
+    path: str,
+    check: bool = True,
+    num_proc: int = 8,
+) -> List[Tuple[int, str, str]]:
+    src_path_list = []
+    compiled_path_list = []
+    for root, _, files in os.walk(path):
+        if '__pycache__' in root:
+            continue
+        for file in files:
+            file_wo_ext, ext = os.path.splitext(file)
+            if ext[1:] in LANGS_COMPILE:
+                src_path = os.path.join(root, file)
+                compiled_path = os.path.join(root, COMPILE_DIR, file_wo_ext)
+                src_path_list.append(src_path)
+                compiled_path_list.append(compiled_path)
+    return compile_list(src_path_list, compiled_path_list, check, num_proc)
+
+
+if __name__ == '__main__':
+    fire.Fire()
+    # python cweval/commons.py compile_all_in --path benchmark

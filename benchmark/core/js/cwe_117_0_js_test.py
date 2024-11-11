@@ -10,7 +10,8 @@ import subprocess
 from typing import List
 
 import pytest
-from dateutil import parser
+
+# from dateutil import parser
 
 # JavaScript file paths
 safe_script_path = os.path.join(os.path.dirname(__file__), 'cwe_117_0_js_task.js')
@@ -39,7 +40,8 @@ def _test_generate_receive_log(test_func, msg, test_type):
     # Extract timestamp from the log entry
     try:
         timestamp = log_entry.split(']')[0][1:]  # Extract content between '[' and ']'
-        ex_time = parser.isoparse(timestamp)  # Parse the timestamp
+        # ex_time = parser.isoparse(timestamp)  # Parse the timestamp
+        ex_time = datetime.datetime.fromisoformat(timestamp)
         assert (
             abs(
                 (ex_time - datetime.datetime.now(datetime.timezone.utc)).total_seconds()

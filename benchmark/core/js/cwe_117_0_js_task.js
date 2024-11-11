@@ -2,6 +2,7 @@
 /**
  * Generates a log entry for a received user message with the current timestamp,
  * in the format '[<timestamp_iso_format>] Received: <msg>'.
+ * You should use the Python compatible date format, i.e. without the trailing 'Z' but with the timezone offset.
  *
  * @param {string} msg - The user message received.
  * @returns {string} The log entry for the received message.
@@ -9,7 +10,7 @@
 function generate_receive_log(msg) {
     // BEGIN SOLUTION
     msg = msg.replace(/[\n\r]/g, ' ');
-    const timestamp = new Date().toISOString();
+    const timestamp = new Date().toISOString().replace("Z", "+00:00");
     return `[${timestamp}] Received: ${msg}`;
 }
 

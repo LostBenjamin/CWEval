@@ -3,9 +3,9 @@ CWE-377: Regular expression injection
 https://codeql.github.com/codeql-query-help/javascript/js-regex-injection/#regular-expression-injection
 """
 
-import json
 import os
 import subprocess
+from typing import List
 
 import pytest
 from wrapt_timeout_decorator import timeout
@@ -15,20 +15,17 @@ secure_script_path = os.path.join(os.path.dirname(__file__), 'cwe_400_0_js_task.
 unsafe_script_path = os.path.join(os.path.dirname(__file__), 'cwe_400_0_js_unsafe.js')
 
 
-def exec_cmd(cmd):
-    try:
-        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        return result.stdout.strip() == "true"
-    except subprocess.CalledProcessError:
-        return False
+def exec_cmd(cmd: List[str]) -> str:
+    result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+    return result.returncode, result.stdout.strip(), result.stderr.strip()
 
 
 def search_pattern(pattern, content):
-    return exec_cmd(['node', secure_script_path, pattern, content])
+    return exec_cmd(['node', secure_script_path, pattern, content])[1] == 'true'
 
 
 def search_pattern_unsafe(pattern, content):
-    return exec_cmd(['node', unsafe_script_path, pattern, content])
+    return exec_cmd(['node', unsafe_script_path, pattern, content])[1] == 'true'
 
 
 @timeout(4)

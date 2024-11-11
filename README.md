@@ -54,7 +54,7 @@ nvm install --lts
 nvm use --lts
 
 # 3. Install dependencies globally
-npm install -g <>
+npm install -g escape-html node-rsa argon2 escape-string-regexp lodash
 
 # 4. Enable global dependencies in scripts
 export NODE_PATH=$(npm root -g)

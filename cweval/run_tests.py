@@ -81,9 +81,6 @@ class TestResultCollector:
                         self.file_results[file_path].secure = False
 
 
-import importlib
-
-
 def run_tests(
     test_path,
     timeout_per_test: float = 3,

@@ -33,7 +33,9 @@ from natsort import natsorted
 
 from cweval.commons import (
     BENCHMARK_DIR,
-    compile_c_list,
+    COMPILE_DIR,
+    LANGS_COMPILE,
+    compile_list,
     get_code_from,
     pass_at_k,
     run_in_subprocess,
@@ -45,7 +47,6 @@ from cweval.sandbox import Container
 class Evaler:
 
     entrypoint_anchor = 'BEGIN ENTRYPOINT'
-    compiled_path = 'compiled'
     docker_user = 'ubuntu'
     repo_path_in_docker = f'/home/{docker_user}/CWEval'
 
@@ -249,19 +250,23 @@ class Evaler:
         # python cweval/evaluate.py compile_parsed --eval_path evals/eval_241110_014704
         self._fill_task_files()
         # compile C
-        c_files = [
-            task_file for task_file in self.task_files if task_file.endswith('.c')
+        to_compile_files = [
+            task_file
+            for task_file in self.task_files
+            if any(task_file.endswith(f'.{lang}') for lang in LANGS_COMPILE)
         ]
-        # {c_files_dir}/{compiled_path}/{name_of_c_file}
-        c_compiled_files = [
+        # {c_files_dir}/{COMPILE_DIR}/{name_of_c_file}
+        compiled_files = [
             os.path.join(
                 os.path.dirname(task_file),
-                self.compiled_path,
+                COMPILE_DIR,
                 os.path.splitext(os.path.basename(task_file))[0],
             )
-            for task_file in c_files
+            for task_file in to_compile_files
         ]
-        compile_c_list(c_files, c_compiled_files, check=False, num_proc=self.num_proc)
+        compile_list(
+            to_compile_files, compiled_files, check=False, num_proc=self.num_proc
+        )
 
     def run_tests(self) -> None:
         # python cweval/evaluate.py run_tests --eval_path evals/eval_241110_014704
