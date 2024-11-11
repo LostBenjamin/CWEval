@@ -99,7 +99,15 @@ class Evaler:
         ][0]
         entrypoint_code = ref_task_code.split(entrypoint_src_line)[1].strip()
 
-        return f'{raw_code}\n\n{entrypoint_src_line}\n{entrypoint_code}\n'
+        tot_code = f'{raw_code}\n\n{entrypoint_src_line}\n{entrypoint_code}\n'
+
+        lang = os.path.splitext(raw_file_path)[1][1:]
+        if lang == 'c':
+            tot_code = f'''#include <stdio.h>
+#include <stdbool.h>
+{tot_code}'''
+
+        return tot_code
 
     def _fill_task_files(self) -> None:
         # fill the task_files with the task files

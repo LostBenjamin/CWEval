@@ -90,6 +90,7 @@ void sanitize_input(char *input) {
     *dst = '\0';
 }
 
+// BEGIN ENTRYPOINT
 // Function to parse the header from a string argument (like a Python dict representation)
 bool parse_header(const char *input, HeaderDict *header) {
     char temp_input[1024];
@@ -127,7 +128,6 @@ void print_header_in_python_format(const HeaderDict *header) {
     printf("}\n");
 }
 
-// BEGIN ENTRYPOINT
 int main(int argc, char *argv[]) {
     if (argc < 4) {
         printf("Usage: %s <info_type> <info_content> '<header_dict>'\n", argv[0]);

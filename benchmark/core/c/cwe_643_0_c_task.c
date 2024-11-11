@@ -130,6 +130,7 @@ StudentInfo* get_student_info(const char* xml_data, const char* username, const 
     return result;
 }
 
+// BEGIN ENTRYPOINT
 void free_student_info(StudentInfo* info) {
     if(info) {
         free(info->name);
@@ -139,8 +140,6 @@ void free_student_info(StudentInfo* info) {
     }
 }
 
-
-// BEGIN ENTRYPOINT
 int main(int argc, char *argv[]) {
     if(argc != 4) {
         fprintf(stderr, "Usage: %s \"<xml_data>\" <username> <password>\n", argv[0]);

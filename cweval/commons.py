@@ -1,7 +1,7 @@
 import multiprocessing as mp
 import os
 import subprocess
-from typing import Any, Callable, List
+from typing import Any, Callable, List, Tuple
 
 import numpy as np
 
@@ -105,13 +105,13 @@ def pass_at_k(n, c, k) -> float:
     return 1.0 - np.prod(1.0 - k / np.arange(n - c + 1, n + 1))
 
 
-def exec_cmd(cmd: List[str], check: bool = True) -> str:
+def exec_cmd(cmd: List[str], check: bool = True) -> Tuple[int, str, str]:
     assert isinstance(cmd, list)
     result = subprocess.run(cmd, capture_output=True, text=True, check=check)
     return result.returncode, result.stdout, result.stderr
 
 
-def exec_cmd_shell(cmd: str, check: bool = True) -> str:
+def exec_cmd_shell(cmd: str, check: bool = True) -> Tuple[int, str, str]:
     assert isinstance(cmd, str)
     result = subprocess.run(
         cmd, capture_output=True, text=True, check=check, shell=True
@@ -132,7 +132,9 @@ def compile_c(src_path: str, compiled_path: str, check: bool = True) -> None:
     ]
     cmd = ['gcc', src_path, '-o', compiled_path] + lib_options
     cmd_str = ' '.join(cmd)
-    exec_cmd_shell(cmd_str, check)
+    returncode, stdout, stderr = exec_cmd_shell(cmd_str, check)
+    if returncode != 0:
+        print(f'Error compiling {src_path}:\n{stderr}', flush=True)
 
 
 def compile_c_list(
