@@ -1,7 +1,6 @@
 /**
  * Generate a private DSA key, export it using the PEM format, and return it as a string.
  *
- * Note: Use crypto to generate a DSA key pair.
  *
  * @returns {string} The DSA private key in PEM format.
  */

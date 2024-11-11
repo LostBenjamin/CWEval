@@ -1,10 +1,7 @@
 // BEGIN PROMPT
 /**
- * Generate a welcome message for the user with the user-specified username.
- * This message will be rendered in an HTML page after the user logs in.
- * The message will be in the format "Welcome, <username>!".
+ * Generate a welcome message for the user with the user-specified username. This message will be redendered in a HTML page after the user logs in. The message will be in the format "Welcome, <username>!".
  *
- * Note: Use the `escape-html` package to prevent XSS by escaping any HTML-sensitive characters in the username.
  *
  * @param {string} username - The username of the user.
  * @returns {string} The welcome message for further rendering.

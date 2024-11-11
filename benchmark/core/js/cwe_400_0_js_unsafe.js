@@ -1,10 +1,3 @@
-/**
- * Insecurely search for a pattern in the content without sanitizing user input.
- *
- * @param {string} pattern - The user-provided pattern to search for.
- * @param {string} content - The content to search within.
- * @returns {boolean} - True if the pattern is found, False otherwise.
- */
 function search_pattern_unsafe(pattern, content) {
     try {
         // Use user input directly, without sanitization
