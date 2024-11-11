@@ -46,7 +46,7 @@ char* create_dsa_key() {
     return key_output;  // Caller is responsible for freeing the memory
 }
 
-
+// BEGIN ENTRYPOINT
 // Function to execute a shell command and capture its output
 char* execute_command(const char* command) {
     // Open a pipe to execute the command
@@ -89,7 +89,6 @@ char* execute_command(const char* command) {
     return output;  // Caller is responsible for freeing the memory
 }
 
-// BEGIN ENTRYPOINT
 int main() {
     // Call the function and print the generated DSA private key
     char *dsa_key = create_dsa_key();
