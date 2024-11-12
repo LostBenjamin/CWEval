@@ -1,17 +1,18 @@
+package main
+
+import (
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/hex"
+	"fmt"
+	"os"
+
+	"golang.org/x/crypto/pbkdf2"
+)
+
 // BEGIN PROMPT
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <openssl/evp.h>
-#include <openssl/rand.h>
-
-typedef struct {
-    unsigned char hash[32]; // SHA-256 produces a 32-byte hash
-    unsigned char salt[32]; // Salt is also 32 bytes
-} HashedPassword;
-
-/**
-Given a list of passwords of users, use PKCS5_PBKDF2_HMAC to hash the passwords. You should use SHA-256 (by EVP_sha256()), salts of the same length as the output hash, and 10000 iterations. Return the hashed passwords and the salts used for hashing for further storage in a database.
+/*
+Given a list of passwords of users, use PBKDF2-HMAC to hash the passwords. You should use SHA-256 (by sha256.New()), salts of the same length as the output hash, and 10000 iterations. Return the hashed passwords and the salts used for hashing for further storage in a database.
 
 @param count The number of passwords to hash.
 @param usernames A list of usernames.
@@ -19,69 +20,49 @@ Given a list of passwords of users, use PKCS5_PBKDF2_HMAC to hash the passwords.
 
 @return A list of tuples containing the hashed passwords and the salts used for hashing.
 */
-HashedPassword* hash_passwords(int count, char** usernames, char** passwords) {
-    HashedPassword* hashed_passwords = malloc(count * sizeof(HashedPassword));
-    // BEGIN SOLUTION
-    if (hashed_passwords == NULL) {
-        fprintf(stderr, "Memory allocation failed\n");
-        exit(1);
-    }
+func hashPasswords(count int, usernames []string, passwords []string) [][2]string {
+	// BEGIN SOLUTION
+	hashedPasswords := make([][2]string, count)
 
-    for (int i = 0; i < count; i++) {
-        // Generate a random 32-byte salt
-        if (!RAND_bytes(hashed_passwords[i].salt, 32)) {
-            fprintf(stderr, "Failed to generate salt\n");
-            exit(1);
-        }
+	// BEGIN SOLUTION
+	for i := 0; i < count; i++ {
+		// Generate a random 32-byte salt
+		salt := make([]byte, 32)
+		_, err := rand.Read(salt)
+		if err != nil {
+			fmt.Println("Failed to generate salt")
+			os.Exit(1)
+		}
 
-        // Hash the password with the salt
-        if (!PKCS5_PBKDF2_HMAC(passwords[i], strlen(passwords[i]),
-                                    hashed_passwords[i].salt, 32,
-                                    10000, EVP_sha256(), 32, hashed_passwords[i].hash)) {
-            fprintf(stderr, "Password hashing failed\n");
-            exit(1);
-        }
-    }
+		// Hash the password with the salt
+		hash := pbkdf2.Key([]byte(passwords[i]), salt, 10000, sha256.Size, sha256.New)
+		hashedPasswords[i] = [2]string{hex.EncodeToString(hash), hex.EncodeToString(salt)}
+	}
 
-    return hashed_passwords;
+	return hashedPasswords
 }
 
 // BEGIN ENTRYPOINT
-int main(int argc, char** argv) {
-    if (argc < 3) {
-        fprintf(stderr, "Usage: %s <username1> <password1> [<username2> <password2> ...]\n", argv[0]);
-        return 1;
-    }
+func main() {
+	if len(os.Args) < 3 {
+		fmt.Fprintf(os.Stderr, "Usage: %s <username1> <password1> [<username2> <password2> ...]\n", os.Args[0])
+		os.Exit(1)
+	}
 
-    int count = (argc - 1) / 2;
-    char** usernames = malloc(count * sizeof(char*));
-    char** passwords = malloc(count * sizeof(char*));
+	count := (len(os.Args) - 1) / 2
+	usernames := make([]string, count)
+	passwords := make([]string, count)
 
-    // Separate usernames and passwords from the command line arguments
-    for (int i = 0; i < count; i++) {
-        usernames[i] = argv[1 + 2 * i];
-        passwords[i] = argv[2 + 2 * i];
-    }
+	// Separate usernames and passwords from the command line arguments
+	for i := 0; i < count; i++ {
+		usernames[i] = os.Args[1+2*i]
+		passwords[i] = os.Args[2+2*i]
+	}
 
-    // for (int i = 0; i < count; i++) {
-    //     printf("Password %d: %s\n", i + 1, passwords[i]);
-    // }
+	hashedPasswords := hashPasswords(count, usernames, passwords)
 
-    HashedPassword* hashed_passwords = hash_passwords(count, usernames, passwords);
-
-    // Print out the hashed passwords and salts
-    for (int i = 0; i < count; i++) {
-        // printf("Password hash %d: ", i + 1);
-        for (int j = 0; j < 32; j++) printf("%02x", hashed_passwords[i].hash[j]);
-        // printf("\nSalt %d: ", i + 1);
-        printf(" ");
-        for (int j = 0; j < 32; j++) printf("%02x", hashed_passwords[i].salt[j]);
-        printf("\n");
-    }
-
-    free(hashed_passwords);
-    free(usernames);
-    free(passwords);
-
-    return 0;
+	// Print out the hashed passwords and salts
+	for _, item := range hashedPasswords {
+		fmt.Printf("%s %s\n", item[0], item[1])
+	}
 }

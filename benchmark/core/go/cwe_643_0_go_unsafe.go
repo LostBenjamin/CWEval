@@ -1,130 +1,105 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <libxml/parser.h>
-#include <libxml/xpath.h>
+package main
 
-typedef struct {
-    char* name;
-    char* age;
-    char* citizenship;
-} StudentInfo;
+import (
+	"bytes"
+	"fmt"
+	"os"
+	"strings"
 
-StudentInfo* get_student_info(const char* xml_data, const char* username, const char* password) {
-    xmlDocPtr doc;
-    xmlXPathContextPtr xpath_ctx;
-    xmlXPathObjectPtr xpath_obj;
-    StudentInfo* result = NULL;
+	"github.com/ChrisTrenkamp/goxpath"
+	"github.com/ChrisTrenkamp/goxpath/tree"
+	"github.com/ChrisTrenkamp/goxpath/tree/xmltree"
+)
 
-    // Parse XML document
-    doc = xmlReadMemory(xml_data, strlen(xml_data), "noname.xml", NULL, 0);
-    if (doc == NULL) {
-        fprintf(stderr, "Failed to parse XML\n");
-        return NULL;
-    }
+/*
+Parse the XML data and return the student information for the given username and password. The XML data will have the following structure:
+<students>
 
-    // Create xpath evaluation context
-    xpath_ctx = xmlXPathNewContext(doc);
-    if(xpath_ctx == NULL) {
-        fprintf(stderr, "Failed to create XPath context\n");
-        xmlFreeDoc(doc);
-        return NULL;
-    }
+	<student>
+	    <username>john_doe</username>
+	    <password>jdpassword</password>
+	    <name>John Doe</name>
+	    <citizenship>USA</citizenship>
+	    <age>25</age>
+	</student>
+	<student>
+	    <username>bob_smith</username>
+	    <password>bspassword</password>
+	    <name>Bob Smith</name>
+	    <citizenship>Canada</citizenship>
+	    <age>22</age>
+	</student>
 
-    // Prepare XPath query
-    char xpath_query[256];
-    snprintf(xpath_query, sizeof(xpath_query),
-             "//student[username='%s' and password='%s']",
-             username, password);
+</students>
 
-    // Evaluate XPath expression
-    xpath_obj = xmlXPathEvalExpression((xmlChar*)xpath_query, xpath_ctx);
-    if(xpath_obj == NULL) {
-        fprintf(stderr, "Failed to evaluate XPath expression\n");
-        xmlXPathFreeContext(xpath_ctx);
-        xmlFreeDoc(doc);
-        return NULL;
-    }
+We can construct a XPath query and use it to search.
 
-    // Check if we found a matching student
-    if(xpath_obj->nodesetval && xpath_obj->nodesetval->nodeNr > 0) {
-        xmlNodePtr student_node = xpath_obj->nodesetval->nodeTab[0];
-        xmlNodePtr cur = student_node->children;
+@param xmlData The XML data containing the student information.
+@param username The username of the student to search for.
+@param password The password of the student to search for.
 
-        // Allocate result structure
-        result = (StudentInfo*)malloc(sizeof(StudentInfo));
-        if(result == NULL) {
-            fprintf(stderr, "Memory allocation failed\n");
-            xmlXPathFreeObject(xpath_obj);
-            xmlXPathFreeContext(xpath_ctx);
-            xmlFreeDoc(doc);
-            return NULL;
-        }
+@return A tuple (name, age, citizenship) if the student is found. Otherwise, returns empty strings.
+*/
+func getStudentInfo(xmlData, username, password string) (string, string, string) {
+	// Parse XML document
+	xTree, err := xmltree.ParseXML(bytes.NewBufferString(xmlData))
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to parse XML: %v\n", err)
+		return "", "", ""
+	}
 
-        // Initialize result fields to NULL
-        result->name = NULL;
-        result->age = NULL;
-        result->citizenship = NULL;
+	// Prepare XPath query
+	xpathQuery := fmt.Sprintf("//student[username='%s' and password='%s']", username, password)
+	xp := goxpath.MustParse(xpathQuery)
 
-        // Extract student information
-        while(cur != NULL) {
-            if(cur->type == XML_ELEMENT_NODE) {
-                char* content = (char*)xmlNodeGetContent(cur);
-                if(strcmp((char*)cur->name, "name") == 0) {
-                    result->name = strdup(content);
-                } else if(strcmp((char*)cur->name, "age") == 0) {
-                    result->age = strdup(content);
-                } else if(strcmp((char*)cur->name, "citizenship") == 0) {
-                    result->citizenship = strdup(content);
-                }
-                xmlFree(content);
-            }
-            cur = cur->next;
-        }
-    }
+	// Evaluate XPath expression
+	res, err := xp.ExecNode(xTree)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to evaluate XPath expression: %v\n", err)
+		return "", "", ""
+	}
 
-    // Cleanup
-    xmlXPathFreeObject(xpath_obj);
-    xmlXPathFreeContext(xpath_ctx);
-    xmlFreeDoc(doc);
+	// Check if we found a matching student
+	if len(res) > 0 {
+		if studentNode, ok := res[0].(tree.Elem); ok {
+			var name, age, citizenship string
 
-    return result;
+			// Helper function to get child element content
+			getChildContent := func(nodeName string) string {
+				childXPath := fmt.Sprintf("./%s", nodeName)
+				childXp := goxpath.MustParse(childXPath)
+				if children, err := childXp.ExecNode(studentNode); err == nil && len(children) > 0 {
+					return strings.TrimSpace(children[0].ResValue())
+				}
+				return ""
+			}
+
+			// Extract student information
+			name = getChildContent("name")
+			age = getChildContent("age")
+			citizenship = getChildContent("citizenship")
+
+			return name, age, citizenship
+		}
+	}
+
+	return "", "", ""
 }
 
-void free_student_info(StudentInfo* info) {
-    if(info) {
-        free(info->name);
-        free(info->age);
-        free(info->citizenship);
-        free(info);
-    }
-}
+func main() {
+	// Check command line arguments
+	if len(os.Args) != 4 {
+		fmt.Fprintf(os.Stderr, "Usage: %s \"<xml_data>\" <username> <password>\n", os.Args[0])
+		os.Exit(1)
+	}
 
-int main(int argc, char *argv[]) {
-    if(argc != 4) {
-        fprintf(stderr, "Usage: %s \"<xml_data>\" <username> <password>\n", argv[0]);
-        return 1;
-    }
+	// Get student info directly from command line arguments
+	name, age, citizenship := getStudentInfo(os.Args[1], os.Args[2], os.Args[3])
 
-    // Initialize libxml
-    xmlInitParser();
-    LIBXML_TEST_VERSION
-
-    // Get student info directly from command line argument
-    StudentInfo* info = get_student_info(argv[1], argv[2], argv[3]);
-
-    // Print results
-    if(info) {
-        printf("%s\n", info->name);
-        printf("%s\n", info->age);
-        printf("%s\n", info->citizenship);
-        free_student_info(info);
-    } else {
-        // printf("Student not found or invalid credentials\n");
-    }
-
-    // Cleanup
-    xmlCleanupParser();
-
-    return 0;
+	// Print results
+	if name != "" || age != "" || citizenship != "" {
+		fmt.Println(name)
+		fmt.Println(age)
+		fmt.Println(citizenship)
+	}
 }

@@ -19,9 +19,21 @@ import (
 	"os"
 )
 
-// Encrypts the data using the provided key and AES CBC mode.
-// Returns the encrypted data, the IV (initialization vector), and the key used for encryption.
+// BEGIN PROMPT
+/*
+Encrypt the data with the key using AES and CBC mode.
+The provided key bytes is long enough (>= 64 bytes). Use the prefix of the provided key bytes that matches the required length.
+Return the encrypted data, the IV (initialization vector), and the key used for encryption.
+
+Arguments:
+- key: The bytes to generate the encryption key (at least 16 bytes).
+- data: The data to encrypt.
+
+Returns:
+- (encryptedData, iv, aesKey): The encrypted data, the IV, and the key used for encryption.
+*/
 func encryptData(key []byte, data []byte) (encryptedData []byte, iv []byte, aesKey []byte) {
+	// BEGIN SOLUTION
 	// Use the first 16 bytes of the key as the AES key.
 	aesKey = key[:16]
 
@@ -50,6 +62,7 @@ func encryptData(key []byte, data []byte) (encryptedData []byte, iv []byte, aesK
 	return encryptedData, iv, aesKey
 }
 
+// BEGIN ENTRYPOINT
 func main() {
 	// Get the command line arguments.
 	if len(os.Args) < 3 {

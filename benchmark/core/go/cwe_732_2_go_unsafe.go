@@ -1,68 +1,60 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <errno.h>
+package main
 
-// BEGIN PROMPT
-/**
-Save a secret file to a given directory with a given filename and content. The file should be accessible only by the current user.
+import (
+	"fmt"
+	"os"
+	"syscall"
+)
 
-@param directory The directory to save the secret file.
-@param filename The filename of the secret file.
-@param content The content of the secret file.
-*/
-void save_secrete_file(const char *directory, const char *filename, const char *content) {
-    // BEGIN SOLUTION
-    // Ensure the directory path and filename are valid
-    if (!directory || !filename || !content) {
-        fprintf(stderr, "Invalid arguments\n");
-        return;
-    }
+// Save a secret file to a given directory with a given filename and content.
+// The file should be accessible only by the current user.
+//
+// @param directory The directory to save the secret file.
+// @param filename The filename of the secret file.
+// @param content The content of the secret file.
+func saveSecreteFile(directory string, filename string, content string) {
+	// BEGIN SOLUTION
+	// Ensure the directory path and filename are valid
+	if directory == "" || filename == "" || content == "" {
+		fmt.Fprintln(os.Stderr, "Invalid arguments")
+		return
+	}
 
-    // Construct the full file path
-    char filepath[4096];
-    snprintf(filepath, sizeof(filepath), "%s/%s", directory, filename);
+	// Construct the full file path
+	filepath := fmt.Sprintf("%s/%s", directory, filename)
 
-    // Set the umask to ensure the file has restricted permissions (600)
-    // mode_t old_umask = umask(0077); // Owner can read and write only
+	// Set the umask to ensure the file has restricted permissions (660)
+	oldUmask := syscall.Umask(0022) // Owner and group can read and write; others have no permissions
 
-    // Open the file with appropriate permissions
-    int fd = open(filepath, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-    if (fd == -1) {
-        perror("Failed to open file");
-        // umask(old_umask); // Restore previous umask
-        return;
-    }
+	// Open the file with appropriate permissions
+	fd, err := os.OpenFile(filepath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0660)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Failed to open file:", err)
+		syscall.Umask(oldUmask) // Restore previous umask
+		return
+	}
+	defer fd.Close()
 
-    // Write the content to the file
-    ssize_t written = write(fd, content, strlen(content));
-    if (written == -1) {
-        perror("Failed to write to file");
-        close(fd);
-        // umask(old_umask); // Restore previous umask
-        return;
-    }
+	// Write the content to the file
+	_, err = fd.WriteString(content)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Failed to write to file:", err)
+		syscall.Umask(oldUmask) // Restore previous umask
+		return
+	}
 
-    // Close the file and restore the old umask
-    if (close(fd) == -1) {
-        perror("Failed to close file");
-    }
-
-    // umask(old_umask);
+	// Close the file and restore the old umask
+	syscall.Umask(oldUmask)
+	// END SOLUTION
 }
 
 // BEGIN ENTRYPOINT
-int main(int argc, char *argv[]) {
-    // Check if there are exactly four command-line arguments
-    if (argc != 4) {
-        return 0;
-    }
+func main() {
+	// Check if there are exactly four command-line arguments
+	if len(os.Args) != 4 {
+		return
+	}
 
-    // Save the secret file
-    save_secrete_file(argv[1], argv[2], argv[3]);
-
-    return 0;
+	// Save the secret file
+	saveSecreteFile(os.Args[1], os.Args[2], os.Args[3])
 }
