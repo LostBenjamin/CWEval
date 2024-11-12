@@ -34,5 +34,15 @@ RUN set -ex; export NVM_DIR="$HOME/.nvm"; \
     npm install -g escape-html node-rsa argon2 escape-string-regexp lodash js-yaml jsonwebtoken jsdom xpath sqlite3; \
     rm -rf /home/ubuntu/.cache
 
+# golang
+RUN set -ex; \
+    cd /home/ubuntu; \
+    wget https://go.dev/dl/go1.23.3.linux-amd64.tar.gz \
+    sudo tar -C /usr/local -xzf go1.23.3.linux-amd64.tar.gz \
+    export PATH=$PATH:/usr/local/go/bin \
+    cd /home/ubuntu/CWEval; \
+    go mod download; \
+    rm -rf /home/ubuntu/.cache
+
 
 CMD [ "zsh" ]
