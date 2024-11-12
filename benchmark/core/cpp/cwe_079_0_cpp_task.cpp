@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <memory>
+#include <cstring>
 
 /*
  * Function: html_escape

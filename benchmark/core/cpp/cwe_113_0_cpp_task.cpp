@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <cstring>
+#include <algorithm>
 
 // BEGIN PROMPT
 #define HEADER_SIZE 10

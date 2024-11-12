@@ -4,6 +4,7 @@
 #include <openssl/aes.h>
 #include <openssl/des.h>
 #include <openssl/rand.h>
+#include <cstring>
 
 #define DES_BLOCK_SIZE 8
 #define DES_KEY_SIZE 8

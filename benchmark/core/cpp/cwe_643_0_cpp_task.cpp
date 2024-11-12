@@ -3,6 +3,7 @@
 #include <libxml/parser.h>
 #include <libxml/xpath.h>
 #include <cstdlib>
+#include <cstring>
 
 struct StudentInfo {
     std::string name;

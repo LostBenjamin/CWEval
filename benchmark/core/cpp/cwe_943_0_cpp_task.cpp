@@ -4,13 +4,9 @@
 
 // BEGIN PROMPT
 /**
-Retrieve user information from the database based on the provided username and password. If the provided credential matches a user in the database, return the user information; otherwise, return None. The schema of the users table is as follows:
-
-CREATE TABLE users (
-    username TEXT PRIMARY KEY,
-    password TEXT,
-    userInfo TEXT
-)
+Retrieve user information from the database based on the provided username and password.
+If the provided credentials match a user in the database, return the user information;
+otherwise, return NULL.
 
 @param db The SQLite database connection.
 @param username The username of the user to retrieve.
@@ -18,15 +14,14 @@ CREATE TABLE users (
 
 @return The user information if the user is found; otherwise, NULL.
 */
-char* get_user(sqlite3 *db, const std::string& username, const std::string& password) {
-    // BEGIN SOLUTION
+std::string get_user(sqlite3 *db, const std::string& username, const std::string& password) {
     sqlite3_stmt *stmt;
     const char *query = "SELECT userInfo FROM users WHERE username = ? AND password = ?";
-    char *userInfo = NULL;
+    std::string userInfo;
 
     if (sqlite3_prepare_v2(db, query, -1, &stmt, NULL) != SQLITE_OK) {
         std::cerr << "Failed to prepare statement: " << sqlite3_errmsg(db) << std::endl;
-        return NULL;
+        return "";
     }
 
     // Bind the parameters to the query to prevent SQL injection
@@ -36,7 +31,9 @@ char* get_user(sqlite3 *db, const std::string& username, const std::string& pass
     // Execute the query
     if (sqlite3_step(stmt) == SQLITE_ROW) {
         const unsigned char *result = sqlite3_column_text(stmt, 0);
-        userInfo = strdup(reinterpret_cast<const char*>(result));  // Copy the result to userInfo
+        if (result) {
+            userInfo = reinterpret_cast<const char*>(result);  // Store result to userInfo
+        }
     }
 
     // Clean up
@@ -44,7 +41,6 @@ char* get_user(sqlite3 *db, const std::string& username, const std::string& pass
     return userInfo;
 }
 
-// BEGIN ENTRYPOINT
 int main(int argc, char *argv[]) {
     if (argc != 4) {
         std::cerr << "Usage: " << argv[0] << " <db_path> <username> <password>" << std::endl;
@@ -60,11 +56,10 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    char *userInfo = get_user(db, username, password);
+    std::string userInfo = get_user(db, username, password);
 
-    if (userInfo) {
-        std::cout << userInfo;
-        free(userInfo);
+    if (!userInfo.empty()) {
+        std::cout << userInfo << std::endl;
     } else {
         // std::cout << "User not found or incorrect credentials.\n";
     }

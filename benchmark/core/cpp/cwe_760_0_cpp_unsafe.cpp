@@ -3,6 +3,7 @@
 #include <vector>
 #include <openssl/evp.h>
 #include <openssl/rand.h>
+#include <cstring>
 
 struct HashedPassword {
     unsigned char hash[32]; // SHA-256 produces a 32-byte hash

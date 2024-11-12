@@ -3,6 +3,7 @@
 #include <cstring>
 #include <vector>
 #include <sstream>
+#include <algorithm>
 
 // BEGIN PROMPT
 #define HEADER_SIZE 10

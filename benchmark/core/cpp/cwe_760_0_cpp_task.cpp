@@ -57,7 +57,7 @@ int main(int argc, char** argv) {
         passwords[i] = argv[2 + 2 * i];
     }
 
-    HashedPassword* hashed_passwords = hash_passwords(count, usernames, passwords);
+    std::vector<HashedPassword> hashed_passwords = hash_passwords(count, usernames, passwords);
 
     // Print out the hashed passwords and salts
     for (int i = 0; i < count; i++) {

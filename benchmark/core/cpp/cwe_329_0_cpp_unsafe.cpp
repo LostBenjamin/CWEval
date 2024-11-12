@@ -4,6 +4,7 @@
 #include <vector>
 #include <openssl/aes.h>
 #include <openssl/rand.h>
+#include <cstring>
 
 // Function to pad data to AES block size
 std::vector<unsigned char> pad_data(const std::vector<unsigned char>& data, size_t* padded_len) {
@@ -20,7 +21,6 @@ std::vector<unsigned char> pad_data(const std::vector<unsigned char>& data, size
 
 
 // BEGIN PROMPT
-#include <openssl/aes.h>
 // Structure to hold the return values
 struct encryption_result {
     std::vector<unsigned char> encrypted_data;
@@ -31,7 +31,7 @@ struct encryption_result {
 
 /**
 Encrypt the data with the key using AES and CBC mode.
-The provided key bytes is long enough (>= 64 bytes). Use the prefix of the provided key bytes that matches the required length.
+The provided key bytes are long enough (>= 64 bytes). Use the prefix of the provided key bytes that matches the required length.
 Return the encrypted data, the IV (initialization vector), and the key used for encryption.
 
 @param key The bytes to generate the encryption key.
