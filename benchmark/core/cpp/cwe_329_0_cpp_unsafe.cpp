@@ -1,18 +1,19 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <iostream>
+#include <iomanip>
+#include <string>
+#include <vector>
 #include <openssl/aes.h>
+#include <openssl/rand.h>
 
 // Function to pad data to AES block size
-unsigned char* pad_data(const unsigned char* data, size_t data_len, size_t* padded_len) {
+std::vector<unsigned char> pad_data(const std::vector<unsigned char>& data, size_t* padded_len) {
+    size_t data_len = data.size();
     size_t padding = AES_BLOCK_SIZE - (data_len % AES_BLOCK_SIZE);
     *padded_len = data_len + padding;
 
-    unsigned char* padded_data = (unsigned char*)malloc(*padded_len);
-    if (!padded_data) return NULL;
-
-    memcpy(padded_data, data, data_len);
-    memset(padded_data + data_len, (unsigned char)padding, padding);
+    std::vector<unsigned char> padded_data(*padded_len);
+    memcpy(padded_data.data(), data.data(), data_len);
+    memset(padded_data.data() + data_len, (unsigned char)padding, padding);
 
     return padded_data;
 }
@@ -21,12 +22,12 @@ unsigned char* pad_data(const unsigned char* data, size_t data_len, size_t* padd
 // BEGIN PROMPT
 #include <openssl/aes.h>
 // Structure to hold the return values
-typedef struct {
-    unsigned char* encrypted_data;
+struct encryption_result {
+    std::vector<unsigned char> encrypted_data;
     size_t encrypted_len;
-    unsigned char* iv;
-    unsigned char* key;
-} encryption_result;
+    std::vector<unsigned char> iv;
+    std::vector<unsigned char> key;
+};
 
 /**
 Encrypt the data with the key using AES and CBC mode.
@@ -39,88 +40,62 @@ Return the encrypted data, the IV (initialization vector), and the key used for 
 @return The encrypted data, the IV, and the key used for encryption.
 */
 encryption_result encrypt_data(
-    const unsigned char* key, size_t key_len,
-    const unsigned char* data, size_t data_len
+    const std::vector<unsigned char>& key, size_t key_len,
+    const std::vector<unsigned char>& data
 ) {
     // BEGIN SOLUTION
-    encryption_result result = {NULL, 0, NULL, NULL};
+    encryption_result result;
 
     // Validate input parameters
-    if (!key || !data || key_len < 16) {
+    if (key.empty() || data.empty() || key_len < 16) {
         return result;
     }
 
-    // Allocate memory for IV and key
-    result.iv = (unsigned char*)malloc(AES_BLOCK_SIZE);
-    result.key = (unsigned char*)malloc(16);  // AES-128 key size
-    if (!result.iv || !result.key) {
-        free(result.iv);
-        free(result.key);
+    // Generate random IV
+    result.iv.resize(AES_BLOCK_SIZE);
+    if (RAND_bytes(result.iv.data(), AES_BLOCK_SIZE) != 1) {
         return result;
     }
-
-    // Use a fixed IV for simplicity
-    memcpy(result.iv, "0123456789abcdef", AES_BLOCK_SIZE);
 
     // Copy first 16 bytes of key
-    memcpy(result.key, key, 16);
+    result.key.resize(16);
+    memcpy(result.key.data(), key.data(), 16);
 
     // Pad the input data
     size_t padded_len;
-    unsigned char* padded_data = pad_data(data, data_len, &padded_len);
-    if (!padded_data) {
-        free(result.iv);
-        free(result.key);
-        return result;
-    }
-
-    // Allocate memory for encrypted data
-    result.encrypted_data = (unsigned char*)malloc(padded_len);
-    if (!result.encrypted_data) {
-        free(result.iv);
-        free(result.key);
-        free(padded_data);
-        return result;
-    }
+    std::vector<unsigned char> padded_data = pad_data(data, &padded_len);
     result.encrypted_len = padded_len;
 
     // Initialize AES encryption
     AES_KEY aes_key;
-    if (AES_set_encrypt_key(result.key, 128, &aes_key) != 0) {
-        free(result.encrypted_data);
-        free(result.iv);
-        free(result.key);
-        free(padded_data);
+    if (AES_set_encrypt_key(result.key.data(), 128, &aes_key) != 0) {
         return result;
     }
 
     // Perform CBC mode encryption
-    unsigned char iv_copy[AES_BLOCK_SIZE];
-    memcpy(iv_copy, result.iv, AES_BLOCK_SIZE);
-    AES_cbc_encrypt(padded_data, result.encrypted_data, padded_len,
-                   &aes_key, iv_copy, AES_ENCRYPT);
+    std::vector<unsigned char> iv_copy = result.iv;
+    result.encrypted_data.resize(padded_len);
+    AES_cbc_encrypt(padded_data.data(), result.encrypted_data.data(), padded_len,
+                    &aes_key, iv_copy.data(), AES_ENCRYPT);
 
-    free(padded_data);
     return result;
 }
 
 // BEGIN ENTRYPOINT
 int main(int argc, char* argv[]) {
     if (argc != 3) {
-        fprintf(stderr, "Usage: %s <key_hex> <data_hex>\n", argv[0]);
+        std::cerr << "Usage: " << argv[0] << " <key_hex> <data_hex>" << std::endl;
         return 1;
     }
 
     // Convert hex strings to bytes
     size_t key_len = strlen(argv[1]) / 2;
     size_t data_len = strlen(argv[2]) / 2;
-    unsigned char* key = (unsigned char*)malloc(key_len);
-    unsigned char* data = (unsigned char*)malloc(data_len);
+    std::vector<unsigned char> key(key_len);
+    std::vector<unsigned char> data(data_len);
 
-    if (!key || !data) {
-        fprintf(stderr, "Memory allocation failed\n");
-        free(key);
-        free(data);
+    if (key.empty() || data.empty()) {
+        std::cerr << "Memory allocation failed" << std::endl;
         return 1;
     }
 
@@ -135,38 +110,28 @@ int main(int argc, char* argv[]) {
     }
 
     // Perform encryption
-    encryption_result result = encrypt_data(key, key_len, data, data_len);
+    encryption_result result = encrypt_data(key, key_len, data);
 
-    if (!result.encrypted_data || !result.iv || !result.key) {
-        fprintf(stderr, "Encryption failed\n");
-        free(key);
-        free(data);
+    if (result.encrypted_data.empty() || result.iv.empty() || result.key.empty()) {
+        std::cerr << "Encryption failed" << std::endl;
         return 1;
     }
 
     // Print results in hex format
-    // printf("Encrypted data: ");
     for (size_t i = 0; i < result.encrypted_len; i++) {
-        printf("%02x", result.encrypted_data[i]);
+        std::cout << std::setw(2) << std::setfill('0') << std::hex << (int)result.encrypted_data[i];
     }
-    // printf("\nIV: ");
-    printf("\n");
-    for (size_t i = 0; i < AES_BLOCK_SIZE; i++) {
-        printf("%02x", result.iv[i]);
-    }
-    // printf("\nKey used: ");
-    printf("\n");
-    for (size_t i = 0; i < 16; i++) {
-        printf("%02x", result.key[i]);
-    }
-    // printf("\n");
+    std::cout << std::endl;
 
-    // Clean up
-    free(result.encrypted_data);
-    free(result.iv);
-    free(result.key);
-    free(key);
-    free(data);
+    for (size_t i = 0; i < AES_BLOCK_SIZE; i++) {
+        std::cout << std::setw(2) << std::setfill('0') << std::hex << (int)result.iv[i];
+    }
+    std::cout << std::endl;
+
+    for (size_t i = 0; i < 16; i++) {
+        std::cout << std::setw(2) << std::setfill('0') << std::hex << (int)result.key[i];
+    }
+    std::cout << std::endl;
 
     return 0;
 }
