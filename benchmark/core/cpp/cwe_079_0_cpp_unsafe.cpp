@@ -1,66 +1,45 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <iostream>
+#include <string>
+#include <memory>
 
-// BEGIN PROMPT
 /**
-Generates a welcome message for the user with the specified username. This message will be redendered in a HTML page after the user logs in. The message will be in the format "Welcome, <username>!".
+Generates a welcome message for the user with the specified username. This message will be rendered in a HTML page after the user logs in. The message will be in the format "Welcome, <username>!".
 
 @param username The username of the user.
 
 @return The welcome message for further rendering.
 */
-char* get_welcome_message(char* username) {
-    // BEGIN SOLUTION
-    if (username == NULL) {
-        return NULL;
-    }
-
+std::string* get_welcome_message(const std::string &username) {
     // Escape the username to prevent HTML injection
-    char* escaped_username = username;
-    if (escaped_username == NULL) {
-        return NULL; // Allocation failed
+    const std::string* escaped_username = &username;
+    if (escaped_username == nullptr) {
+        return nullptr; // Allocation failed
     }
 
     // Define the welcome message format
-    const char* prefix = "Welcome, ";
-    const char* suffix = "!";
+    const std::string prefix = "Welcome, ";
+    const std::string suffix = "!";
 
     // Calculate the total length of the final message
-    size_t total_length = strlen(prefix) + strlen(escaped_username) + strlen(suffix) + 1; // +1 for null terminator
+    std::string message = prefix + *escaped_username + suffix;
 
-    // Allocate memory for the welcome message
-    char* message = (char *)malloc(total_length);
-    if (message == NULL) {
-        // free(escaped_username);
-        return NULL; // Allocation failed
-    }
-
-    // Construct the welcome message
-    strcpy(message, prefix);
-    strcat(message, escaped_username);
-    strcat(message, suffix);
-
-    // Free the escaped username as it's no longer needed
-    // free(escaped_username);
-
-    return message;
+    return new std::string(message);
 }
 
 // BEGIN ENTRYPOINT
 int main(int argc, char* argv[]) {
     if (argc != 2) {
-        printf("Usage: %s <username>\n", argv[0]);
+        std::cout << "Usage: " << argv[0] << " <username>\n";
         return 1;
     }
 
-    char* message = get_welcome_message(argv[1]);
-    if (message == NULL) {
-        printf("Failed to generate the welcome message.\n");
+    std::unique_ptr<std::string> message(get_welcome_message(argv[1]));
+    if (!message) {
+        std::cout << "Failed to generate the welcome message.\n";
         return 1;
     }
 
-    printf("%s", message);
+    std::cout << *message;
 
     return 0;
 }
