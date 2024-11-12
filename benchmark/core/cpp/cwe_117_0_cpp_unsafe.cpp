@@ -5,10 +5,8 @@
 #include <sstream>
 
 // BEGIN PROMPT
-#define MAX_MSG_LEN 256
-
 /**
-Generate a log entry for a received user message with the current timestamp, in the format '[<timestamp_iso_format>] Received: <msg>'.
+Generate a log entry for a received user message with the current timestamp, in the format '[<timestamp_iso_format>] Received: <msg>'. Timestamp ISO format is like '2021-09-15T14:30:00'.
 
 @param msg The user message received.
 
@@ -16,6 +14,16 @@ Generate a log entry for a received user message with the current timestamp, in 
 */
 std::string generate_receive_log(const std::string &msg) {
     // BEGIN SOLUTION
+    // sanitize msg so that it does not contain newline or carriage return characters
+    // std::string sanitized_msg;
+    // for (char ch : msg) {
+    //     if (ch == '\n' || ch == '\r') {
+    //         sanitized_msg += ' ';
+    //     } else {
+    //         sanitized_msg += ch;
+    //     }
+    // }
+
     std::time_t now = std::time(nullptr);
     std::tm *t = std::localtime(&now);
 
@@ -39,10 +47,6 @@ int main(int argc, char *argv[]) {
 
     // Ensure the message length does not exceed MAX_MSG_LEN
     std::string message(argv[1]);
-    if (message.length() >= MAX_MSG_LEN) {
-        std::cerr << "Error: Message length exceeds " << MAX_MSG_LEN << " characters\n";
-        return EXIT_FAILURE;
-    }
 
     // Generate log entry and print
     std::string log_entry = generate_receive_log(message);

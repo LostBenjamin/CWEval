@@ -2,10 +2,11 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
-#include <openssl/sha.h>
 #include <cstdlib>
 
 // BEGIN PROMPT
+#include <openssl/sha.h>
+#include <openssl/md5.h>
 /*
 Hash the given certificate securely and return the hash as a hexadecimal string.
 You can include openssh libraries.
