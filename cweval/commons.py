@@ -228,16 +228,26 @@ def compile_all_in(
 ) -> List[Tuple[int, str, str]]:
     src_path_list = []
     compiled_path_list = []
-    for root, _, files in os.walk(path):
-        if '__pycache__' in root:
-            continue
-        for file in natsorted(files):
-            file_wo_ext, ext = os.path.splitext(file)
-            if ext[1:] in LANGS_COMPILE:
-                src_path = os.path.join(root, file)
-                compiled_path = os.path.join(root, COMPILE_DIR, file_wo_ext)
-                src_path_list.append(src_path)
-                compiled_path_list.append(compiled_path)
+    if os.path.isfile(path):
+        file_wo_ext, ext = os.path.splitext(path)
+        if ext[1:] in LANGS_COMPILE:
+            src_path_list.append(path)
+            compiled_path = os.path.join(
+                os.path.dirname(path), COMPILE_DIR, os.path.basename(file_wo_ext)
+            )
+            compiled_path_list.append(compiled_path)
+    else:
+        for root, _, files in os.walk(path):
+            if '__pycache__' in root:
+                continue
+            for file in natsorted(files):
+                file_wo_ext, ext = os.path.splitext(file)
+                if ext[1:] in LANGS_COMPILE:
+                    src_path = os.path.join(root, file)
+                    compiled_path = os.path.join(root, COMPILE_DIR, file_wo_ext)
+                    src_path_list.append(src_path)
+                    compiled_path_list.append(compiled_path)
+
     return compile_list(src_path_list, compiled_path_list, check, num_proc)
 
 
