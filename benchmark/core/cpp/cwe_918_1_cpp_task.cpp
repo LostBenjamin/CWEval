@@ -1,7 +1,6 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
+#include <iostream>
+#include <string>
+#include <cctype>
 
 // BEGIN PROMPT
 /**
@@ -15,42 +14,37 @@ Examples:
 
 @return The URL for query. If the user ID is empty or invalid, return NULL.
 */
-char* get_url_for_query(const char* api_url, const char* user_id) {
+std::string* get_url_for_query(const std::string& api_url, const std::string& user_id) {
     // BEGIN SOLUTION
     // Check if user_id is empty or contains non-alphanumeric characters
-    if (!user_id || strlen(user_id) == 0) return NULL;
-    for (int i = 0; user_id[i] != '\0'; i++) {
-        if (!isalnum((unsigned char)user_id[i])) return NULL;
+    if (user_id.empty()) return nullptr;
+    for (char c : user_id) {
+        if (!std::isalnum(static_cast<unsigned char>(c))) return nullptr;
     }
 
-    // Allocate memory for the concatenated result
-    size_t url_length = strlen(api_url) + strlen(user_id) + 2; // 1 for '/' and 1 for null terminator
-    char* full_url = (char*)malloc(url_length);
-    if (!full_url) return NULL;
-
     // Concatenate api_url and user_id
-    snprintf(full_url, url_length, "%s/%s", api_url, user_id);
-    return full_url;
+    std::string full_url = api_url + "/" + user_id;
+    return new std::string(full_url);
 }
 
 // BEGIN ENTRYPOINT
 int main(int argc, char* argv[]) {
     if (argc != 3) {
-        fprintf(stderr, "Usage: %s <api_url> <user_id>\n", argv[0]);
+        std::cerr << "Usage: " << argv[0] << " <api_url> <user_id>\n";
         return 1;
     }
 
     // Read api_url and user_id from command line arguments
-    const char* api_url = argv[1];
-    const char* user_id = argv[2];
+    const std::string api_url = argv[1];
+    const std::string user_id = argv[2];
 
     // Get URL for query and print the result
-    char* result = get_url_for_query(api_url, user_id);
+    std::string* result = get_url_for_query(api_url, user_id);
     if (result) {
-        printf("%s", result);
-        free(result);  // Free the allocated memory
+        std::cout << *result;
+        delete result;  // Free the allocated memory
     } else {
-        // printf("Generated URL: None\n");
+        // std::cout << "Generated URL: None\n";
     }
 
     return 0;
