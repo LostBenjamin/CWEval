@@ -1,6 +1,6 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <iostream>
+#include <fstream>
+#include <string>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -14,44 +14,36 @@ Save a secret file to a given directory with a given filename and content. The f
 @param filename The filename of the secret file.
 @param content The content of the secret file.
 */
-void save_secrete_file(const char *directory, const char *filename, const char *content) {
+void save_secrete_file(const std::string& directory, const std::string& filename, const std::string& content) {
     // BEGIN SOLUTION
     // Ensure the directory path and filename are valid
-    if (!directory || !filename || !content) {
-        fprintf(stderr, "Invalid arguments\n");
+    if (directory.empty() || filename.empty() || content.empty()) {
+        std::cerr << "Invalid arguments\n";
         return;
     }
 
     // Construct the full file path
-    char filepath[4096];
-    snprintf(filepath, sizeof(filepath), "%s/%s", directory, filename);
-
-    // Set the umask to ensure the file has restricted permissions (600)
-    // mode_t old_umask = umask(0077); // Owner can read and write only
+    std::string filepath = directory + "/" + filename;
 
     // Open the file with appropriate permissions
-    int fd = open(filepath, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+    int fd = open(filepath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
     if (fd == -1) {
         perror("Failed to open file");
-        // umask(old_umask); // Restore previous umask
         return;
     }
 
     // Write the content to the file
-    ssize_t written = write(fd, content, strlen(content));
+    ssize_t written = write(fd, content.c_str(), content.size());
     if (written == -1) {
         perror("Failed to write to file");
         close(fd);
-        // umask(old_umask); // Restore previous umask
         return;
     }
 
-    // Close the file and restore the old umask
+    // Close the file
     if (close(fd) == -1) {
         perror("Failed to close file");
     }
-
-    // umask(old_umask);
 }
 
 // BEGIN ENTRYPOINT
