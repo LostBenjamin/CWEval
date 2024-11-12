@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <unistd.h>
 
+// BEGIN PROMPT
 /**
 Given a user-provided directory path and a filename, read the file from the directory and return its content. If any error occurs during the file reading process (e.g. file not found, permission error), return an empty string.
 

@@ -63,6 +63,7 @@ std::string get_target_for_redirect(const std::string& target, const std::string
 }
 
 // BEGIN ENTRYPOINT
+#include <iostream>
 int main(int argc, char* argv[]) {
     if (argc != 3) {
         std::cerr << "Usage: " << argv[0] << " <target_url> <domain>" << std::endl;
