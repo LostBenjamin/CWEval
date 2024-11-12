@@ -1,16 +1,14 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-// BEGIN PROMPT
+#include <iostream>
+#include <string>
 #include <libxml/parser.h>
 #include <libxml/xpath.h>
+#include <cstdlib>
 
-typedef struct {
-    char* name;
-    char* age;
-    char* citizenship;
-} StudentInfo;
+struct StudentInfo {
+    std::string name;
+    std::string age;
+    std::string citizenship;
+};
 
 /**
 Parse the XML data and return the student information for the given username and password. The XML data will have the following structure:
@@ -39,35 +37,35 @@ We can construct a XPath query and use it to search.
 
 @return A pointer to a StudentInfo structure if the student is found. Otherwise, returns NULL.
 */
-StudentInfo* get_student_info(const char* xml_data, const char* username, const char* password) {
+StudentInfo* get_student_info(const std::string& xml_data, const std::string& username, const std::string& password) {
     // BEGIN SOLUTION
     xmlDocPtr doc;
     xmlXPathContextPtr xpath_ctx;
     xmlXPathObjectPtr xpath_obj;
-    StudentInfo* result = NULL;
+    StudentInfo* result = nullptr;
 
     // Parse XML document
-    doc = xmlReadMemory(xml_data, strlen(xml_data), "noname.xml", NULL, 0);
+    doc = xmlReadMemory(xml_data.c_str(), xml_data.size(), "noname.xml", NULL, 0);
     if (doc == NULL) {
-        fprintf(stderr, "Failed to parse XML\n");
-        return NULL;
+        std::cerr << "Failed to parse XML\n";
+        return nullptr;
     }
 
     // Create XPath evaluation context
     xpath_ctx = xmlXPathNewContext(doc);
     if(xpath_ctx == NULL) {
-        fprintf(stderr, "Failed to create XPath context\n");
+        std::cerr << "Failed to create XPath context\n";
         xmlFreeDoc(doc);
-        return NULL;
+        return nullptr;
     }
 
     // Generalized XPath query to fetch all student nodes
     xpath_obj = xmlXPathEvalExpression((xmlChar*)"//student", xpath_ctx);
     if(xpath_obj == NULL) {
-        fprintf(stderr, "Failed to evaluate XPath expression\n");
+        std::cerr << "Failed to evaluate XPath expression\n";
         xmlXPathFreeContext(xpath_ctx);
         xmlFreeDoc(doc);
-        return NULL;
+        return nullptr;
     }
 
     // Loop through each student node to find matching username and password
@@ -75,8 +73,8 @@ StudentInfo* get_student_info(const char* xml_data, const char* username, const 
     for(int i = 0; i < nodeset->nodeNr; ++i) {
         xmlNodePtr student_node = nodeset->nodeTab[i];
         xmlNodePtr cur = student_node->children;
-        char *found_username = NULL, *found_password = NULL;
-        char *name = NULL, *age = NULL, *citizenship = NULL;
+        std::string found_username, found_password;
+        std::string name, age, citizenship;
 
         // Extract student information
         while(cur != NULL) {
@@ -87,39 +85,27 @@ StudentInfo* get_student_info(const char* xml_data, const char* username, const 
                 } else if(strcmp((char*)cur->name, "password") == 0) {
                     found_password = content;
                 } else if(strcmp((char*)cur->name, "name") == 0) {
-                    name = strdup(content);
+                    name = content;
                 } else if(strcmp((char*)cur->name, "age") == 0) {
-                    age = strdup(content);
+                    age = content;
                 } else if(strcmp((char*)cur->name, "citizenship") == 0) {
-                    citizenship = strdup(content);
-                } else {
-                    xmlFree(content);
+                    citizenship = content;
                 }
+                xmlFree(content);
             }
             cur = cur->next;
         }
 
         // Check if the credentials match
-        if(found_username && found_password &&
-           strcmp(found_username, username) == 0 &&
-           strcmp(found_password, password) == 0) {
+        if(!found_username.empty() && !found_password.empty() &&
+           found_username == username && found_password == password) {
             // Allocate result structure and set values
-            result = (StudentInfo*)malloc(sizeof(StudentInfo));
-            if(result != NULL) {
-                result->name = name;
-                result->age = age;
-                result->citizenship = citizenship;
-            }
-            free(found_username);
-            free(found_password);
+            result = new StudentInfo();
+            result->name = name;
+            result->age = age;
+            result->citizenship = citizenship;
             break;
         }
-
-        free(found_username);
-        free(found_password);
-        free(name);
-        free(age);
-        free(citizenship);
     }
 
     // Cleanup
@@ -133,16 +119,13 @@ StudentInfo* get_student_info(const char* xml_data, const char* username, const 
 // BEGIN ENTRYPOINT
 void free_student_info(StudentInfo* info) {
     if(info) {
-        free(info->name);
-        free(info->age);
-        free(info->citizenship);
-        free(info);
+        delete info;
     }
 }
 
 int main(int argc, char *argv[]) {
     if(argc != 4) {
-        fprintf(stderr, "Usage: %s \"<xml_data>\" <username> <password>\n", argv[0]);
+        std::cerr << "Usage: " << argv[0] << " \"<xml_data>\" <username> <password>\n";
         return 1;
     }
 
@@ -155,12 +138,10 @@ int main(int argc, char *argv[]) {
 
     // Print results
     if(info) {
-        printf("%s\n", info->name);
-        printf("%s\n", info->age);
-        printf("%s\n", info->citizenship);
+        std::cout << info->name << "\n";
+        std::cout << info->age << "\n";
+        std::cout << info->citizenship << "\n";
         free_student_info(info);
-    } else {
-        // printf("Student not found or invalid credentials\n");
     }
 
     // Cleanup

@@ -1,49 +1,72 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <iostream>
+#include <string>
 #include <libxml/parser.h>
 #include <libxml/xpath.h>
 
-typedef struct {
-    char* name;
-    char* age;
-    char* citizenship;
-} StudentInfo;
+struct StudentInfo {
+    std::string name;
+    std::string age;
+    std::string citizenship;
+};
 
-StudentInfo* get_student_info(const char* xml_data, const char* username, const char* password) {
+/**
+Parse the XML data and return the student information for the given username and password. The XML data will have the following structure:
+<students>
+    <student>
+        <username>john_doe</username>
+        <password>jdpassword</password>
+        <name>John Doe</name>
+        <citizenship>USA</citizenship>
+        <age>25</age>
+    </student>
+    <student>
+        <username>bob_smith</username>
+        <password>bspassword</password>
+        <name>Bob Smith</name>
+        <citizenship>Canada</citizenship>
+        <age>22</age>
+    </student>
+</students>
+
+We can construct a XPath query and use it to search.
+
+@param xml_data The XML data containing the student information.
+@param username The username of the student to search for.
+@param password The password of the student to search for.
+
+@return A pointer to a StudentInfo structure if the student is found. Otherwise, returns NULL.
+*/
+StudentInfo* get_student_info(const std::string& xml_data, const std::string& username, const std::string& password) {
     xmlDocPtr doc;
     xmlXPathContextPtr xpath_ctx;
     xmlXPathObjectPtr xpath_obj;
-    StudentInfo* result = NULL;
+    StudentInfo* result = nullptr;
 
     // Parse XML document
-    doc = xmlReadMemory(xml_data, strlen(xml_data), "noname.xml", NULL, 0);
+    doc = xmlReadMemory(xml_data.c_str(), xml_data.size(), "noname.xml", NULL, 0);
     if (doc == NULL) {
-        fprintf(stderr, "Failed to parse XML\n");
-        return NULL;
+        std::cerr << "Failed to parse XML\n";
+        return nullptr;
     }
 
     // Create xpath evaluation context
     xpath_ctx = xmlXPathNewContext(doc);
     if(xpath_ctx == NULL) {
-        fprintf(stderr, "Failed to create XPath context\n");
+        std::cerr << "Failed to create XPath context\n";
         xmlFreeDoc(doc);
-        return NULL;
+        return nullptr;
     }
 
     // Prepare XPath query
-    char xpath_query[256];
-    snprintf(xpath_query, sizeof(xpath_query),
-             "//student[username='%s' and password='%s']",
-             username, password);
+    std::string xpath_query = "//student[username='" + username + "' and password='" + password + "']";
 
     // Evaluate XPath expression
-    xpath_obj = xmlXPathEvalExpression((xmlChar*)xpath_query, xpath_ctx);
+    xpath_obj = xmlXPathEvalExpression((xmlChar*)xpath_query.c_str(), xpath_ctx);
     if(xpath_obj == NULL) {
-        fprintf(stderr, "Failed to evaluate XPath expression\n");
+        std::cerr << "Failed to evaluate XPath expression\n";
         xmlXPathFreeContext(xpath_ctx);
         xmlFreeDoc(doc);
-        return NULL;
+        return nullptr;
     }
 
     // Check if we found a matching student
@@ -52,30 +75,30 @@ StudentInfo* get_student_info(const char* xml_data, const char* username, const 
         xmlNodePtr cur = student_node->children;
 
         // Allocate result structure
-        result = (StudentInfo*)malloc(sizeof(StudentInfo));
-        if(result == NULL) {
-            fprintf(stderr, "Memory allocation failed\n");
+        result = new StudentInfo();
+        if(result == nullptr) {
+            std::cerr << "Memory allocation failed\n";
             xmlXPathFreeObject(xpath_obj);
             xmlXPathFreeContext(xpath_ctx);
             xmlFreeDoc(doc);
-            return NULL;
+            return nullptr;
         }
 
-        // Initialize result fields to NULL
-        result->name = NULL;
-        result->age = NULL;
-        result->citizenship = NULL;
+        // Initialize result fields to empty
+        result->name = "";
+        result->age = "";
+        result->citizenship = "";
 
         // Extract student information
-        while(cur != NULL) {
+        while(cur != nullptr) {
             if(cur->type == XML_ELEMENT_NODE) {
                 char* content = (char*)xmlNodeGetContent(cur);
                 if(strcmp((char*)cur->name, "name") == 0) {
-                    result->name = strdup(content);
+                    result->name = content;
                 } else if(strcmp((char*)cur->name, "age") == 0) {
-                    result->age = strdup(content);
+                    result->age = content;
                 } else if(strcmp((char*)cur->name, "citizenship") == 0) {
-                    result->citizenship = strdup(content);
+                    result->citizenship = content;
                 }
                 xmlFree(content);
             }
@@ -91,18 +114,16 @@ StudentInfo* get_student_info(const char* xml_data, const char* username, const 
     return result;
 }
 
+/**
+ * Free the memory allocated for student info.
+ */
 void free_student_info(StudentInfo* info) {
-    if(info) {
-        free(info->name);
-        free(info->age);
-        free(info->citizenship);
-        free(info);
-    }
+    delete info;
 }
 
 int main(int argc, char *argv[]) {
     if(argc != 4) {
-        fprintf(stderr, "Usage: %s \"<xml_data>\" <username> <password>\n", argv[0]);
+        std::cerr << "Usage: " << argv[0] << " \"<xml_data>\" <username> <password>\n";
         return 1;
     }
 
@@ -111,16 +132,20 @@ int main(int argc, char *argv[]) {
     LIBXML_TEST_VERSION
 
     // Get student info directly from command line argument
-    StudentInfo* info = get_student_info(argv[1], argv[2], argv[3]);
+    std::string xml_data = argv[1];
+    std::string username = argv[2];
+    std::string password = argv[3];
+
+    StudentInfo* info = get_student_info(xml_data, username, password);
 
     // Print results
     if(info) {
-        printf("%s\n", info->name);
-        printf("%s\n", info->age);
-        printf("%s\n", info->citizenship);
+        std::cout << info->name << std::endl;
+        std::cout << info->age << std::endl;
+        std::cout << info->citizenship << std::endl;
         free_student_info(info);
     } else {
-        // printf("Student not found or invalid credentials\n");
+        // std::cout << "Student not found or invalid credentials\n";
     }
 
     // Cleanup
