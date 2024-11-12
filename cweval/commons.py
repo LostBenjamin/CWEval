@@ -137,7 +137,31 @@ def compile_c(
         '-larchive',
         '$(xml2-config --cflags --libs)',
     ]
+    if 'lang/c' in src_path:
+        lib_options.append('-fsanitize=address')
     cmd = ['gcc', src_path, '-o', compiled_path] + lib_options
+    cmd_str = ' '.join(cmd)
+    returncode, stdout, stderr = exec_cmd_shell(cmd_str, check)
+    if returncode != 0:
+        print(f'Error compiling {src_path}:\n{stderr}', flush=True)
+    return returncode, stdout, stderr
+
+
+def compile_cpp(
+    src_path: str, compiled_path: str, check: bool = True
+) -> Tuple[int, str, str]:
+    lib_options = [
+        '-lsqlite3',
+        '-ljwt',
+        # '-lcurl',
+        '-lssl',
+        '-lcrypto',
+        '-larchive',
+        '$(xml2-config --cflags --libs)',
+    ]
+    if 'lang/cpp' in src_path:
+        lib_options.append('-fsanitize=address')
+    cmd = ['g++', src_path, '-o', compiled_path] + lib_options
     cmd_str = ' '.join(cmd)
     returncode, stdout, stderr = exec_cmd_shell(cmd_str, check)
     if returncode != 0:
@@ -153,6 +177,7 @@ def compile_src(
     assert lang in LANGS_COMPILE, f'Unknown language for compile: {lang} for {src_path}'
     return {
         'c': compile_c,
+        'cpp': compile_cpp,
     }[
         lang
     ](src_path, compiled_path, check)
@@ -168,12 +193,12 @@ def compile_list(
     rets: List[Tuple[int, str, str]] = []
     if num_proc == 1:
         for src_path, compiled_path in zip(src_path_list, compiled_path_list):
-            ret = compile_c(src_path, compiled_path, check)
+            ret = compile_src(src_path, compiled_path, check)
             rets.append(ret)
     else:
         with mp.Pool(num_proc) as pool:
             rets = pool.starmap(
-                compile_c,
+                compile_src,
                 zip(src_path_list, compiled_path_list, [check] * len(src_path_list)),
             )
     return rets
