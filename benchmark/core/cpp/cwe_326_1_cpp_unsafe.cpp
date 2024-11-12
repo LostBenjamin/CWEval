@@ -1,10 +1,11 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <iostream>
+#include <string>
+#include <cstdio>
+#include <cstdlib>
 
 // BEGIN PROMPT
 // function to execute a shell command and capture its output; caller is responsible for freeing the memory; DO NOT need to implement this function as it is provided
-char* execute_command(const char* command);
+std::string execute_command(const std::string& command);
 
 /**
 Generate a private DSA key, export it using the PEM format, and return it as a string.
@@ -15,29 +16,26 @@ You can use `char param_filename[] = "/tmp/tempXXXXXX"; int fd = mkstemp(param_f
 
 @return The generated DSA private key in PEM format, or NULL if an error occurred.
 */
-char* create_dsa_key() {
+std::string create_dsa_key() {
     // BEGIN SOLUTION
     // Create a unique temporary file name for the DSA parameter file
     char param_filename[] = "/tmp/tempXXXXXX";
     int fd = mkstemp(param_filename);
 
-
     // Generate DSA parameters and save them to the temporary file
-    char param_command[256];
-    snprintf(param_command, sizeof(param_command), "openssl dsaparam -out %s 1024", param_filename);
-    if (system(param_command) != 0) {
-        fprintf(stderr, "Failed to generate DSA parameters\n");
-        return NULL;
+    std::string param_command = "openssl dsaparam -out " + std::string(param_filename) + " 1024";
+    if (system(param_command.c_str()) != 0) {
+        std::cerr << "Failed to generate DSA parameters\n";
+        return "";
     }
 
     // Generate DSA private key using the parameter file
-    char key_command[256];
-    snprintf(key_command, sizeof(key_command), "openssl gendsa %s", param_filename);
-    char *key_output = execute_command(key_command);
-    if (key_output == NULL) {
-        fprintf(stderr, "Failed to generate DSA key\n");
+    std::string key_command = "openssl gendsa " + std::string(param_filename);
+    std::string key_output = execute_command(key_command);
+    if (key_output.empty()) {
+        std::cerr << "Failed to generate DSA key\n";
         remove(param_filename);  // Clean up parameter file
-        return NULL;
+        return "";
     }
 
     // Clean up the temporary parameter file
@@ -46,42 +44,24 @@ char* create_dsa_key() {
     return key_output;  // Caller is responsible for freeing the memory
 }
 
-
 // Function to execute a shell command and capture its output
-char* execute_command(const char* command) {
+std::string execute_command(const std::string& command) {
     // Open a pipe to execute the command
-    FILE *fp = popen(command, "r");
-    if (fp == NULL) {
-        fprintf(stderr, "Failed to run command\n");
-        return NULL;
+    FILE* fp = popen(command.c_str(), "r");
+    if (fp == nullptr) {
+        std::cerr << "Failed to run command\n";
+        return "";
     }
 
     // Allocate a buffer to store the command output
     size_t buffer_size = 8192;  // Initial buffer size for command output
-    char *output = (char *)malloc(buffer_size);
-    if (output == NULL) {
-        fprintf(stderr, "Memory allocation failed\n");
-        fclose(fp);
-        return NULL;
-    }
+    std::string output;
+    char buffer[buffer_size];
 
     // Read the command output into the buffer
-    size_t total_read = 0;
-    size_t bytes_read;
-    while ((bytes_read = fread(output + total_read, 1, buffer_size - total_read, fp)) > 0) {
-        total_read += bytes_read;
-        if (total_read >= buffer_size) {
-            buffer_size *= 2;  // Double the buffer size if it is full
-            output = (char *)realloc(output, buffer_size);
-            if (output == NULL) {
-                fprintf(stderr, "Memory allocation failed\n");
-                fclose(fp);
-                return NULL;
-            }
-        }
+    while (fgets(buffer, sizeof(buffer), fp) != nullptr) {
+        output.append(buffer);
     }
-
-    output[total_read] = '\0';  // Null-terminate the string
 
     // Close the pipe
     fclose(fp);
@@ -92,12 +72,11 @@ char* execute_command(const char* command) {
 // BEGIN ENTRYPOINT
 int main() {
     // Call the function and print the generated DSA private key
-    char *dsa_key = create_dsa_key();
-    if (dsa_key != NULL) {
-        printf("%s", dsa_key);
-        free(dsa_key);  // Free the allocated memory
+    std::string dsa_key = create_dsa_key();
+    if (!dsa_key.empty()) {
+        std::cout << dsa_key;
     } else {
-        fprintf(stderr, "Failed to generate DSA key\n");
+        std::cerr << "Failed to generate DSA key\n";
     }
 
     return 0;
