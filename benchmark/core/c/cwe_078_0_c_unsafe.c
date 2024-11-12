@@ -51,5 +51,8 @@ int main(int argc, char *argv[]) {
     // Print the output
     printf("%s", output);
 
+    // Free the allocated memory
+    free(output);
+
     return 0;
 }

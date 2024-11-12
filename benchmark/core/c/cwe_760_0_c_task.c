@@ -80,5 +80,8 @@ int main(int argc, char** argv) {
     }
 
     free(hashed_passwords);
+    free(usernames);
+    free(passwords);
+
     return 0;
 }

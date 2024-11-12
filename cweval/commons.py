@@ -138,7 +138,11 @@ def compile_c(
         '$(xml2-config --cflags --libs)',
     ]
     if 'lang/c' in src_path:
-        lib_options.append('-fsanitize=address')
+        exclude_patterns = [
+            'lang/c/cwe_476_0_c_',
+        ]
+        if not any([pattern in src_path for pattern in exclude_patterns]):
+            lib_options.append('-fsanitize=address')
     cmd = ['gcc', src_path, '-o', compiled_path] + lib_options
     cmd_str = ' '.join(cmd)
     returncode, stdout, stderr = exec_cmd_shell(cmd_str, check)

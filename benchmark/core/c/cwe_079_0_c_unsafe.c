@@ -62,5 +62,7 @@ int main(int argc, char* argv[]) {
 
     printf("%s", message);
 
+    free(message);
+
     return 0;
 }

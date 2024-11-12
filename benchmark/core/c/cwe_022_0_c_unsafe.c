@@ -14,13 +14,15 @@ Given a user-provided directory path and a filename, read the file from the dire
 char *read_file_from_dir(const char *filename, const char *dir_path) {
     // BEGIN SOLUTION
     // Construct the file path
+    char* empty_result = malloc(1);
+    empty_result[0] = '\0';
     char file_path[1024];
     snprintf(file_path, sizeof(file_path), "%s/%s", dir_path, filename);
 
     // Open the file for reading
     FILE *file = fopen(file_path, "r");
     if (file == NULL) {
-        return "";  // If file can't be opened, return an empty string
+        return empty_result;  // If file can't be opened, return an empty string
     }
 
     // Read the contents of the file
@@ -39,6 +41,7 @@ char *read_file_from_dir(const char *filename, const char *dir_path) {
     content = realloc(content, content_size + 1);
     content[content_size] = '\0';
 
+    free(empty_result);
     return content;
 }
 
@@ -52,6 +55,9 @@ int main(int argc, char *argv[]) {
     char *content = read_file_from_dir(argv[1], argv[2]);
     // print the content
     printf("%s", content);
+
+    // Free the allocated memory
+    free(content);
 
     return 0;
 }

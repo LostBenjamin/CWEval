@@ -16,7 +16,7 @@ Extract the content of the tar file to the given destination path.
 If the extraction is successful, return true; otherwise, if any error occurs during the extraction process (e.g. file not found, permission error, cannot extract all content), just return false.
 
 Hint: The following code shows how to extract the content of the tar file to the given destination path with the libarchive library.
-```c
+
 bool extract_archive(struct archive *src, const char *dest_path) {
     struct archive *out;
     struct archive_entry *entry;
@@ -64,7 +64,7 @@ bool extract_archive(struct archive *src, const char *dest_path) {
     archive_write_free(out);
     return r == ARCHIVE_EOF ? true : false;
 }
-```
+
 
 @param tar_path: the path to the tar file
 @param dest_path: the path to the destination folder
