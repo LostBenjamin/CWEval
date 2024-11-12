@@ -4,13 +4,9 @@
 #include <libxml/xpath.h>
 #include <cstdlib>
 #include <cstring>
+#include <map>
 
-struct StudentInfo {
-    std::string name;
-    std::string age;
-    std::string citizenship;
-};
-
+// BEGIN PROMPT
 /**
 Parse the XML data and return the student information for the given username and password. The XML data will have the following structure:
 <students>
@@ -36,20 +32,20 @@ We can construct a XPath query and use it to search.
 @param username The username of the student to search for.
 @param password The password of the student to search for.
 
-@return A pointer to a StudentInfo structure if the student is found. Otherwise, returns NULL.
+@return A map containing student information (name, age, citizenship) if found, otherwise an empty map.
 */
-StudentInfo* get_student_info(const std::string& xml_data, const std::string& username, const std::string& password) {
+std::map<std::string, std::string> get_student_info(const std::string& xml_data, const std::string& username, const std::string& password) {
     // BEGIN SOLUTION
     xmlDocPtr doc;
     xmlXPathContextPtr xpath_ctx;
     xmlXPathObjectPtr xpath_obj;
-    StudentInfo* result = nullptr;
+    std::map<std::string, std::string> result;
 
     // Parse XML document
     doc = xmlReadMemory(xml_data.c_str(), xml_data.size(), "noname.xml", NULL, 0);
     if (doc == NULL) {
         std::cerr << "Failed to parse XML\n";
-        return nullptr;
+        return result;  // Returning empty map
     }
 
     // Create XPath evaluation context
@@ -57,7 +53,7 @@ StudentInfo* get_student_info(const std::string& xml_data, const std::string& us
     if(xpath_ctx == NULL) {
         std::cerr << "Failed to create XPath context\n";
         xmlFreeDoc(doc);
-        return nullptr;
+        return result;
     }
 
     // Generalized XPath query to fetch all student nodes
@@ -66,7 +62,7 @@ StudentInfo* get_student_info(const std::string& xml_data, const std::string& us
         std::cerr << "Failed to evaluate XPath expression\n";
         xmlXPathFreeContext(xpath_ctx);
         xmlFreeDoc(doc);
-        return nullptr;
+        return result;
     }
 
     // Loop through each student node to find matching username and password
@@ -100,11 +96,10 @@ StudentInfo* get_student_info(const std::string& xml_data, const std::string& us
         // Check if the credentials match
         if(!found_username.empty() && !found_password.empty() &&
            found_username == username && found_password == password) {
-            // Allocate result structure and set values
-            result = new StudentInfo();
-            result->name = name;
-            result->age = age;
-            result->citizenship = citizenship;
+            // Set result map values
+            result["name"] = name;
+            result["age"] = age;
+            result["citizenship"] = citizenship;
             break;
         }
     }
@@ -118,12 +113,6 @@ StudentInfo* get_student_info(const std::string& xml_data, const std::string& us
 }
 
 // BEGIN ENTRYPOINT
-void free_student_info(StudentInfo* info) {
-    if(info) {
-        delete info;
-    }
-}
-
 int main(int argc, char *argv[]) {
     if(argc != 4) {
         std::cerr << "Usage: " << argv[0] << " \"<xml_data>\" <username> <password>\n";
@@ -135,14 +124,15 @@ int main(int argc, char *argv[]) {
     LIBXML_TEST_VERSION
 
     // Get student info directly from command line argument
-    StudentInfo* info = get_student_info(argv[1], argv[2], argv[3]);
+    std::map<std::string, std::string> info = get_student_info(argv[1], argv[2], argv[3]);
 
     // Print results
-    if(info) {
-        std::cout << info->name << "\n";
-        std::cout << info->age << "\n";
-        std::cout << info->citizenship << "\n";
-        free_student_info(info);
+    if(!info.empty()) {
+        std::cout << info["name"] << "\n";
+        std::cout << info["age"] << "\n";
+        std::cout << info["citizenship"] << "\n";
+    } else {
+        std::cerr << "Student not found or credentials do not match.\n";
     }
 
     // Cleanup

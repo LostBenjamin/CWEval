@@ -1,9 +1,9 @@
 #include <iostream>
-#include <sqlite3.h>
 #include <string>
 #include <cstdlib>
 
 // BEGIN PROMPT
+#include <sqlite3.h>
 /*
 Retrieve user information from the database based on the provided username and password. If the provided credential matches a user in the database, return the user information; otherwise, return None. The schema of the users table is as follows:
 

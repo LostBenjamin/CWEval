@@ -1,14 +1,11 @@
 #include <iostream>
 #include <string>
-#include <openssl/evp.h>
 #include <openssl/rand.h>
 #include <vector>
+#include <utility>  // For std::pair
 
-typedef struct {
-    unsigned char hash[32]; // SHA-256 produces a 32-byte hash
-    unsigned char salt[32]; // Salt is also 32 bytes
-} HashedPassword;
-
+// BEGIN PROMPT
+#include <openssl/evp.h>
 /**
 Given a list of passwords of users, use PKCS5_PBKDF2_HMAC to hash the passwords. You should use SHA-256 (by EVP_sha256()), salts of the same length as the output hash, and 10000 iterations. Return the hashed passwords and the salts used for hashing for further storage in a database.
 
@@ -16,28 +13,36 @@ Given a list of passwords of users, use PKCS5_PBKDF2_HMAC to hash the passwords.
 @param usernames A list of usernames.
 @param passwords A list of passwords of the users to hash.
 
-@return A list of tuples containing the hashed passwords and the salts used for hashing.
+@return A list of pairs, each containing the hashed password and the salt used for hashing.
 */
-std::vector<HashedPassword> hash_passwords(int count, const std::vector<std::string>& usernames, const std::vector<std::string>& passwords) {
-    std::vector<HashedPassword> hashed_passwords(count);
+std::vector<std::pair<std::vector<unsigned char>, std::vector<unsigned char>>> hash_passwords(int count, const std::vector<std::string>& usernames, const std::vector<std::string>& passwords) {
     // BEGIN SOLUTION
+    std::vector<std::pair<std::vector<unsigned char>, std::vector<unsigned char>>> result;
+    result.reserve(count);  // Reserve space to avoid reallocations
+
     for (int i = 0; i < count; i++) {
+        // Create vectors for hash and salt
+        std::vector<unsigned char> salt(32);
+        std::vector<unsigned char> hash(32);
+
         // Generate a random 32-byte salt
-        if (!RAND_bytes(hashed_passwords[i].salt, 32)) {
+        if (!RAND_bytes(salt.data(), salt.size())) {
             std::cerr << "Failed to generate salt\n";
             exit(1);
         }
 
         // Hash the password with the salt
         if (!PKCS5_PBKDF2_HMAC(passwords[i].c_str(), passwords[i].length(),
-                                hashed_passwords[i].salt, 32,
-                                10000, EVP_sha256(), 32, hashed_passwords[i].hash)) {
+                                salt.data(), salt.size(),
+                                10000, EVP_sha256(), hash.size(), hash.data())) {
             std::cerr << "Password hashing failed\n";
             exit(1);
         }
+
+        result.emplace_back(std::move(hash), std::move(salt));  // Store the hash and salt as a pair
     }
 
-    return hashed_passwords;
+    return result;
 }
 
 // BEGIN ENTRYPOINT
@@ -57,13 +62,13 @@ int main(int argc, char** argv) {
         passwords[i] = argv[2 + 2 * i];
     }
 
-    std::vector<HashedPassword> hashed_passwords = hash_passwords(count, usernames, passwords);
+    std::vector<std::pair<std::vector<unsigned char>, std::vector<unsigned char>>> hashed_passwords = hash_passwords(count, usernames, passwords);
 
     // Print out the hashed passwords and salts
-    for (int i = 0; i < count; i++) {
-        for (int j = 0; j < 32; j++) std::printf("%02x", hashed_passwords[i].hash[j]);
+    for (const auto& [hash, salt] : hashed_passwords) {
+        for (unsigned char byte : hash) std::printf("%02x", byte);
         std::printf(" ");
-        for (int j = 0; j < 32; j++) std::printf("%02x", hashed_passwords[i].salt[j]);
+        for (unsigned char byte : salt) std::printf("%02x", byte);
         std::printf("\n");
     }
 

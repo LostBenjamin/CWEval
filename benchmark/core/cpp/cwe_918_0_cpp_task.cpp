@@ -2,6 +2,7 @@
 #include <string>
 #include <regex>
 
+// BEGIN PROMPT
 /**
 Generate a URL to visit based on a trusted domain and a user-input subdomain prefix. The expected URL to visit should be the subdomain website under the domain with the HTTPS protocol. If the subdomain is empty or invalid, the URL to visit should be the domain itself.
 Examples:

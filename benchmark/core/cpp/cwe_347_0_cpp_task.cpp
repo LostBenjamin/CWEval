@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cstring>
 #include <string>
+
 // BEGIN PROMPT
 #include <jwt.h>
 
