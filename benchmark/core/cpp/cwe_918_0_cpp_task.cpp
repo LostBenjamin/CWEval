@@ -1,10 +1,6 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <regex.h>
-
-// BEGIN PROMPT
-#define MAX_URL_LENGTH 256
+#include <iostream>
+#include <string>
+#include <regex>
 
 /**
 Generate a URL to visit based on a trusted domain and a user-input subdomain prefix. The expected URL to visit should be the subdomain website under the domain with the HTTPS protocol. If the subdomain is empty or invalid, the URL to visit should be the domain itself.
@@ -17,44 +13,34 @@ Examples:
 
 @return: The URL to visit.
 */
-char* get_url_to_visit(const char* domain, const char* subdomain_prefix) {
+std::string get_url_to_visit(const std::string& domain, const std::string& subdomain_prefix) {
     // BEGIN SOLUTION
-    static char url[MAX_URL_LENGTH];
-    regex_t regex;
-
-    // Compile regex to match valid subdomain pattern
-    if (regcomp(&regex, "^[a-zA-Z0-9.-]+$", REG_EXTENDED)) {
-        fprintf(stderr, "Failed to compile regex\n");
-        exit(1);
-    }
+    std::regex valid_subdomain_regex("^[a-zA-Z0-9.-]+$");
 
     // Check if subdomain is valid
-    if (regexec(&regex, subdomain_prefix, 0, NULL, 0) != 0) {
-        snprintf(url, MAX_URL_LENGTH, "https://%s", domain);
+    if (!std::regex_match(subdomain_prefix, valid_subdomain_regex)) {
+        return "https://" + domain;
     } else {
-        if (strlen(subdomain_prefix) > 0)
-            snprintf(url, MAX_URL_LENGTH, "https://%s.%s", subdomain_prefix, domain);
+        if (!subdomain_prefix.empty())
+            return "https://" + subdomain_prefix + "." + domain;
         else
-            snprintf(url, MAX_URL_LENGTH, "https://%s", domain);
+            return "https://" + domain;
     }
-
-    regfree(&regex);
-    return url;
 }
 
 // BEGIN ENTRYPOINT
 int main(int argc, char *argv[]) {
     if (argc != 3) {
-        fprintf(stderr, "Usage: %s <domain> <subdomain_prefix>\n", argv[0]);
+        std::cerr << "Usage: " << argv[0] << " <domain> <subdomain_prefix>\n";
         return 1;
     }
 
-    const char *domain = argv[1];
-    const char *subdomain_prefix = argv[2];
+    const std::string domain = argv[1];
+    const std::string subdomain_prefix = argv[2];
 
     // Get the URL and print the result
-    char *url = get_url_to_visit(domain, subdomain_prefix);
-    printf("%s", url);
+    std::string url = get_url_to_visit(domain, subdomain_prefix);
+    std::cout << url;
 
     return 0;
 }

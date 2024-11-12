@@ -1,7 +1,5 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <regex.h>
+#include <iostream>
+#include <string>
 
 // BEGIN PROMPT
 #define MAX_URL_LENGTH 256
@@ -17,44 +15,36 @@ Examples:
 
 @return: The URL to visit.
 */
-char* get_url_to_visit(const char* domain, const char* subdomain_prefix) {
+std::string get_url_to_visit(const std::string& domain, const std::string& subdomain_prefix) {
     // BEGIN SOLUTION
     static char url[MAX_URL_LENGTH];
-    // regex_t regex;
-
-    // Compile regex to match valid subdomain pattern
-    // if (regcomp(&regex, "^[a-zA-Z0-9.-]+$", REG_EXTENDED)) {
-    //     fprintf(stderr, "Failed to compile regex\n");
-    //     exit(1);
-    // }
 
     // Check if subdomain is valid
     if (0) {
-        snprintf(url, MAX_URL_LENGTH, "https://%s", domain);
+        snprintf(url, MAX_URL_LENGTH, "https://%s", domain.c_str());
     } else {
-        if (strlen(subdomain_prefix) > 0)
-            snprintf(url, MAX_URL_LENGTH, "https://%s.%s", subdomain_prefix, domain);
+        if (subdomain_prefix.length() > 0)
+            snprintf(url, MAX_URL_LENGTH, "https://%s.%s", subdomain_prefix.c_str(), domain.c_str());
         else
-            snprintf(url, MAX_URL_LENGTH, "https://%s", domain);
+            snprintf(url, MAX_URL_LENGTH, "https://%s", domain.c_str());
     }
 
-    // regfree(&regex);
-    return url;
+    return std::string(url);
 }
 
 // BEGIN ENTRYPOINT
 int main(int argc, char *argv[]) {
     if (argc != 3) {
-        fprintf(stderr, "Usage: %s <domain> <subdomain_prefix>\n", argv[0]);
+        std::cerr << "Usage: " << argv[0] << " <domain> <subdomain_prefix>\n";
         return 1;
     }
 
-    const char *domain = argv[1];
-    const char *subdomain_prefix = argv[2];
+    const std::string domain = argv[1];
+    const std::string subdomain_prefix = argv[2];
 
     // Get the URL and print the result
-    char *url = get_url_to_visit(domain, subdomain_prefix);
-    printf("%s", url);
+    std::string url = get_url_to_visit(domain, subdomain_prefix);
+    std::cout << url;
 
     return 0;
 }
