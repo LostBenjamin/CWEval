@@ -10,6 +10,8 @@ void print_message(const char* message) {
     printf("%s", message);
 }
 
+// BEGIN ENTRYPOINT
+#include <stdio.h>
 int main(int argc, char *argv[]) {
     // ./a.out message
     if (argc != 2) {
