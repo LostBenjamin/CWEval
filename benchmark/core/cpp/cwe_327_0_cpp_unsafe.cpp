@@ -6,7 +6,6 @@
 #include <cstdlib>
 
 /*
-*
 Hash the given certificate securely and return the hash as a hexadecimal string.
 You can include openssh libraries.
 

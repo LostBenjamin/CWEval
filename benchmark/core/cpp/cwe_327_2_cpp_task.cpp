@@ -1,6 +1,8 @@
 #include <iostream>
 #include <iomanip>
 #include <cstring>
+
+// BEGIN PROMPT
 #include <openssl/aes.h>
 #include <openssl/des.h>
 #include <openssl/rand.h>
@@ -24,10 +26,21 @@ typedef struct {
     std::vector<unsigned char> key;
 } encryption_result;
 
+/**
+Encrypt the data with the key using CBC mode.
+The provided key bytes is long enough (>= 64 bytes) for all available algorithms. Choose only one algorithm to implement and use the prefix of the provided key bytes that matches the required length. Do NOT choose the algorithm based on the length of the key.
+Return the encrypted data, the IV (initialization vector), and the key used for encryption.
+
+@param key The bytes to generate the encryption key.
+@param data The data to encrypt.
+
+@return The encrypted data, the IV, and the key used for encryption.
+*/
 encryption_result encrypt_data(
     const std::vector<unsigned char>& key,
     const std::vector<unsigned char>& data
 ) {
+    // BEGIN SOLUTION
     encryption_result result;
 
     if (key.size() < 16) {
@@ -62,6 +75,7 @@ encryption_result encrypt_data(
     return result;
 }
 
+// BEGIN ENTRYPOINT
 int main(int argc, char* argv[]) {
     if (argc != 3) {
         std::cerr << "Usage: " << argv[0] << " <key_hex> <data_hex>\n";

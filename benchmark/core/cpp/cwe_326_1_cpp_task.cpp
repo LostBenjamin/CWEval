@@ -5,7 +5,7 @@
 #include <cstring>
 
 // BEGIN PROMPT
-// function to execute a shell command and capture its output; caller is responsible for freeing the memory; DO NOT need to implement this function as it is provided
+// function to execute a shell command and capture its output; caller is responsible for freeing the memory; DO NOT need to implement this function as it is provided later (but declare it here so you can use it.
 std::string execute_command(const std::string& command);
 
 /**
