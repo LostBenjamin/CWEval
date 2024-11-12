@@ -1,38 +1,32 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <iostream>
+#include <vector>
+#include <iomanip>
 #include <openssl/aes.h>
 #include <openssl/des.h>
+#include <openssl/rand.h>
 
 #define DES_BLOCK_SIZE 8
 #define DES_KEY_SIZE 8
 
 // Function to pad data to AES block size
-unsigned char* pad_data(const unsigned char* data, size_t data_len, size_t* padded_len) {
-    size_t padding = DES_BLOCK_SIZE - (data_len % DES_BLOCK_SIZE);
-    *padded_len = data_len + padding;
+std::vector<unsigned char> pad_data(const std::vector<unsigned char>& data, size_t& padded_len) {
+    size_t padding = DES_BLOCK_SIZE - (data.size() % DES_BLOCK_SIZE);
+    padded_len = data.size() + padding;
 
-    unsigned char* padded_data = (unsigned char*)malloc(*padded_len);
-    if (!padded_data) return NULL;
-
-    memcpy(padded_data, data, data_len);
-    memset(padded_data + data_len, (unsigned char)padding, padding);
+    std::vector<unsigned char> padded_data(padded_len);
+    std::copy(data.begin(), data.end(), padded_data.begin());
+    std::fill(padded_data.begin() + data.size(), padded_data.end(), static_cast<unsigned char>(padding));
 
     return padded_data;
 }
 
-
-// BEGIN PROMPT
-#include <openssl/aes.h>
-#include <openssl/des.h>
-#include <openssl/rand.h>
 // Structure to hold the return values
-typedef struct {
-    unsigned char* encrypted_data;
+struct encryption_result {
+    std::vector<unsigned char> encrypted_data;
     size_t encrypted_len;
-    unsigned char* iv;
-    unsigned char* key;
-} encryption_result;
+    std::vector<unsigned char> iv;
+    std::vector<unsigned char> key;
+};
 
 /**
 Encrypt the data with the key using CBC mode.
@@ -45,104 +39,77 @@ Return the encrypted data, the IV (initialization vector), and the key used for 
 @return The encrypted data, the IV, and the key used for encryption.
 */
 encryption_result encrypt_data(
-    const unsigned char* key, size_t key_len,
-    const unsigned char* data, size_t data_len
+    const std::vector<unsigned char>& key, size_t key_len,
+    const std::vector<unsigned char>& data, size_t data_len
 ) {
     // BEGIN SOLUTION
-    encryption_result result = {NULL, 0, NULL, NULL};
+    encryption_result result = { {}, 0, {}, {} };
 
     // Validate input parameters
-    if (!key || !data || key_len < DES_KEY_SIZE) {
+    if (key.empty() || data.empty() || key_len < DES_KEY_SIZE) {
         return result;
     }
 
     // Allocate memory for IV and key
-    result.iv = (unsigned char*)malloc(DES_BLOCK_SIZE);
-    result.key = (unsigned char*)malloc(DES_KEY_SIZE);
-    if (!result.iv || !result.key) {
-        free(result.iv);
-        free(result.key);
-        return result;
-    }
+    result.iv.resize(DES_BLOCK_SIZE);
+    result.key.resize(DES_KEY_SIZE);
 
     // Generate random IV
-    if (RAND_bytes(result.iv, DES_BLOCK_SIZE) != 1) {
-        free(result.iv);
-        free(result.key);
+    if (RAND_bytes(result.iv.data(), DES_BLOCK_SIZE) != 1) {
         return result;
     }
 
     // Copy first 8 bytes of key
-    memcpy(result.key, key, DES_KEY_SIZE);
+    std::copy(key.begin(), key.begin() + DES_KEY_SIZE, result.key.begin());
 
     // Pad the input data
     size_t padded_len;
-    unsigned char* padded_data = pad_data(data, data_len, &padded_len);
-    if (!padded_data) {
-        free(result.iv);
-        free(result.key);
+    std::vector<unsigned char> padded_data = pad_data(data, padded_len);
+    if (padded_data.empty()) {
         return result;
     }
 
     // Allocate memory for encrypted data
-    result.encrypted_data = (unsigned char*)malloc(padded_len);
-    if (!result.encrypted_data) {
-        free(result.iv);
-        free(result.key);
-        free(padded_data);
-        return result;
-    }
+    result.encrypted_data.resize(padded_len);
     result.encrypted_len = padded_len;
 
     // Initialize DES encryption
     DES_cblock key_block;
     DES_key_schedule schedule;
-    memcpy(key_block, result.key, DES_KEY_SIZE);
+    std::copy(result.key.begin(), result.key.end(), key_block);
 
     // Set odd parity for the key
     DES_set_odd_parity(&key_block);
 
     if (DES_set_key_checked(&key_block, &schedule) != 0) {
-        free(result.encrypted_data);
-        free(result.iv);
-        free(result.key);
-        free(padded_data);
         return result;
     }
 
     // Perform CBC mode encryption
     DES_cblock iv_copy;
-    memcpy(iv_copy, result.iv, DES_BLOCK_SIZE);
+    std::copy(result.iv.begin(), result.iv.end(), iv_copy);
 
     // Encrypt the data in CBC mode
     for (size_t i = 0; i < padded_len; i += DES_BLOCK_SIZE) {
-        DES_ncbc_encrypt(padded_data + i, result.encrypted_data + i,
-                        DES_BLOCK_SIZE, &schedule, &iv_copy, DES_ENCRYPT);
+        DES_ncbc_encrypt(padded_data.data() + i, result.encrypted_data.data() + i,
+                         DES_BLOCK_SIZE, &schedule, &iv_copy, DES_ENCRYPT);
     }
 
-    free(padded_data);
     return result;
 }
 
 // BEGIN ENTRYPOINT
 int main(int argc, char* argv[]) {
     if (argc != 3) {
-        fprintf(stderr, "Usage: %s <key_hex> <data_hex>\n", argv[0]);
+        std::cerr << "Usage: " << argv[0] << " <key_hex> <data_hex>" << std::endl;
         return 1;
     }
 
     // Convert hex strings to bytes
     size_t key_len = strlen(argv[1]) / 2;
     size_t data_len = strlen(argv[2]) / 2;
-    unsigned char* key = (unsigned char*)malloc(key_len);
-    unsigned char* data = (unsigned char*)malloc(data_len);
-
-    if (!key || !data) {
-        fprintf(stderr, "Memory allocation failed\n");
-        free(key);
-        free(data);
-        return 1;
-    }
+    std::vector<unsigned char> key(key_len);
+    std::vector<unsigned char> data(data_len);
 
     // Convert hex string to bytes for key
     for (size_t i = 0; i < key_len; i++) {
@@ -157,36 +124,27 @@ int main(int argc, char* argv[]) {
     // Perform encryption
     encryption_result result = encrypt_data(key, key_len, data, data_len);
 
-    if (!result.encrypted_data || !result.iv || !result.key) {
-        fprintf(stderr, "Encryption failed\n");
-        free(key);
-        free(data);
+    if (result.encrypted_data.empty() || result.iv.empty() || result.key.empty()) {
+        std::cerr << "Encryption failed" << std::endl;
         return 1;
     }
 
     // Print results in hex format
-    // printf("Encrypted data: ");
     for (size_t i = 0; i < result.encrypted_len; i++) {
-        printf("%02x", result.encrypted_data[i]);
+        std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)result.encrypted_data[i];
     }
-    // printf("\nIV: ");
-    printf("\n");
-    for (size_t i = 0; i < DES_BLOCK_SIZE; i++) {
-        printf("%02x", result.iv[i]);
-    }
-    // printf("\nKey used: ");
-    printf("\n");
-    for (size_t i = 0; i < DES_KEY_SIZE; i++) {
-        printf("%02x", result.key[i]);
-    }
-    // printf("\n");
 
-    // Clean up
-    free(result.encrypted_data);
-    free(result.iv);
-    free(result.key);
-    free(key);
-    free(data);
+    std::cout << std::endl;
+    for (size_t i = 0; i < DES_BLOCK_SIZE; i++) {
+        std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)result.iv[i];
+    }
+
+    std::cout << std::endl;
+    for (size_t i = 0; i < DES_KEY_SIZE; i++) {
+        std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)result.key[i];
+    }
+
+    std::cout << std::endl;
 
     return 0;
 }
