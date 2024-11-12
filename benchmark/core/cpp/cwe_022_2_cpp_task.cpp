@@ -98,6 +98,7 @@ bool extract_tar_to_path(const std::string& tar_path, const std::string& dest_pa
     }
 }
 
+// BEGIN ENTRYPOINT
 // read tar path and dest path from command line args
 #include <iostream>
 int main(int argc, char* argv[]) {
