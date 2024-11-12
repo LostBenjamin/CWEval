@@ -1,32 +1,32 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdbool.h>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <cstring>
 
 // BEGIN PROMPT
 #define HEADER_SIZE 10
 
-typedef struct {
-    char key[50];
-    char value[100];
-} HeaderEntry;
+struct HeaderEntry {
+    std::string key;
+    std::string value;
+};
 
-typedef struct {
-    HeaderEntry entries[HEADER_SIZE];
-    int count;
-} HeaderDict;
+struct HeaderDict {
+    std::vector<HeaderEntry> entries;
+    int count = 0;
+};
 
 // Function to find the index of a key in the header dictionary, returns -1 if not found
-int find_header_index(const HeaderDict *header, const char *key) {
+int find_header_index(const HeaderDict *header, const std::string &key) {
     for (int i = 0; i < header->count; i++) {
-        if (strcmp(header->entries[i].key, key) == 0) {
+        if (header->entries[i].key == key) {
             return i;
         }
     }
     return -1;
 }
 
-void sanitize_input(char *input);
+void sanitize_input(std::string &input);
 
 /**
 Store the provided information in an existing response header dictionary under the specified type.
@@ -40,15 +40,14 @@ If the specified information type is valid, the updated response header must hav
 
 @return The updated response header dictionary with the stored information.
 */
-HeaderDict* store_info_in_header(const char *info_type, const char *info_content, HeaderDict *header) {
-    // BEGIN SOLUTION
-    const char *type_to_key[] = {"lang", "encoding", "cache"};
-    const char *header_keys[] = {"Accept-Language", "Accept-Encoding", "Cache-Control"};
+HeaderDict* store_info_in_header(const std::string &info_type, const std::string &info_content, HeaderDict *header) {
+    const std::string type_to_key[] = {"lang", "encoding", "cache"};
+    const std::string header_keys[] = {"Accept-Language", "Accept-Encoding", "Cache-Control"};
     const int num_types = sizeof(type_to_key) / sizeof(type_to_key[0]);
 
     int type_index = -1;
     for (int i = 0; i < num_types; i++) {
-        if (strcmp(info_type, type_to_key[i]) == 0) {
+        if (info_type == type_to_key[i]) {
             type_index = i;
             break;
         }
@@ -59,59 +58,46 @@ HeaderDict* store_info_in_header(const char *info_type, const char *info_content
         return header;
     }
 
-    char sanitized_content[100];
-    strncpy(sanitized_content, info_content, sizeof(sanitized_content) - 1);
-    sanitized_content[sizeof(sanitized_content) - 1] = '\0';
+    std::string sanitized_content = info_content;
     sanitize_input(sanitized_content);
 
     int key_index = find_header_index(header, header_keys[type_index]);
     if (key_index == -1) {
         if (header->count < HEADER_SIZE) {
             // Add a new entry to the header dictionary
-            strncpy(header->entries[header->count].key, header_keys[type_index], sizeof(header->entries[header->count].key) - 1);
-            strncpy(header->entries[header->count].value, sanitized_content, sizeof(header->entries[header->count].value) - 1);
+            header->entries.push_back({header_keys[type_index], sanitized_content});
             header->count++;
         }
     } else {
         // Update existing entry
-        strncpy(header->entries[key_index].value, sanitized_content, sizeof(header->entries[key_index].value) - 1);
+        header->entries[key_index].value = sanitized_content;
     }
 
     return header;
 }
 
 // Function to sanitize input by removing newline and carriage return characters
-void sanitize_input(char *input) {
-    char *src = input, *dst = input;
-    while (*src) {
-        if (*src != '\n' && *src != '\r') {
-            *dst++ = *src;
-        }
-        src++;
-    }
-    *dst = '\0';
+void sanitize_input(std::string &input) {
+    input.erase(std::remove(input.begin(), input.end(), '\n'), input.end());
+    input.erase(std::remove(input.begin(), input.end(), '\r'), input.end());
 }
 
-// BEGIN ENTRYPOINT
 // Function to parse the header from a string argument (like a Python dict representation)
-bool parse_header(const char *input, HeaderDict *header) {
-    char temp_input[1024];
-    strncpy(temp_input, input, sizeof(temp_input) - 1);
-    temp_input[sizeof(temp_input) - 1] = '\0';
+bool parse_header(const std::string &input, HeaderDict *header) {
+    std::string temp_input = input;
 
-    char *line = strtok(temp_input, ",{ }:");
+    size_t pos = 0;
     int i = 0;
-    while (line != NULL && i < HEADER_SIZE) {
+    while ((pos = temp_input.find(":")) != std::string::npos && i < HEADER_SIZE * 2) {
+        std::string token = temp_input.substr(0, pos);
         if (i % 2 == 0) {
             // First element, key
-            strncpy(header->entries[i / 2].key, line + 1, sizeof(header->entries[i / 2].key) - 1); // Skip the first quote
-            header->entries[i / 2].key[strlen(header->entries[i / 2].key) - 1] = '\0';  // Remove last quote
+            header->entries.push_back({token.substr(1, token.length() - 2), ""});
         } else {
             // Second element, value
-            strncpy(header->entries[i / 2].value, line + 1, sizeof(header->entries[i / 2].value) - 1); // Skip the first quote
-            header->entries[i / 2].value[strlen(header->entries[i / 2].value) - 1] = '\0';  // Remove last quote
+            header->entries.back().value = token.substr(1, token.length() - 2);
         }
-        line = strtok(NULL, ",{ }:");
+        temp_input.erase(0, pos + 1);
         i++;
     }
     header->count = i / 2;
@@ -120,29 +106,29 @@ bool parse_header(const char *input, HeaderDict *header) {
 
 // Function to print header dictionary in Python dict format
 void print_header_in_python_format(const HeaderDict *header) {
-    printf("{");
+    std::cout << "{";
     for (int i = 0; i < header->count; i++) {
-        printf("\"%s\": \"%s\"", header->entries[i].key, header->entries[i].value);
+        std::cout << "\"" << header->entries[i].key << "\": \"" << header->entries[i].value << "\"";
         if (i < header->count - 1) {
-            printf(", ");
+            std::cout << ", ";
         }
     }
-    printf("}\n");
+    std::cout << "}\n";
 }
 
 int main(int argc, char *argv[]) {
     if (argc < 4) {
-        printf("Usage: %s <info_type> <info_content> '<header_dict>'\n", argv[0]);
+        std::cout << "Usage: " << argv[0] << " <info_type> <info_content> '<header_dict>'\n";
         return 1;
     }
 
-    const char *info_type = argv[1];
-    const char *info_content = argv[2];
+    const std::string info_type = argv[1];
+    const std::string info_content = argv[2];
 
     // Parse the input header from the command line argument
-    HeaderDict header = { .count = 0 };
+    HeaderDict header;
     if (!parse_header(argv[3], &header)) {
-        printf("Error parsing header input.\n");
+        std::cout << "Error parsing header input.\n";
         return 1;
     }
 
