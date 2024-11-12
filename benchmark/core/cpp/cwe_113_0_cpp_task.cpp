@@ -26,6 +26,8 @@ int find_header_index(const HeaderDict *header, const char *key) {
     return -1;
 }
 
+void sanitize_input(char *input);
+
 /**
 Store the provided information in an existing response header dictionary under the specified type.
 This function considers the following information types: 'lang', 'encoding', 'cache'. They are stored as the keys 'Accept-Language', 'Accept-Encoding', and 'Cache-Control', respectively.

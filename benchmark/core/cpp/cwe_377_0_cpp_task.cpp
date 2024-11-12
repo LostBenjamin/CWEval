@@ -13,13 +13,13 @@ Create a temporary file, write the provided results to it, and return the file n
  */
 char* write_results(const char* results) {
     // BEGIN SOLUTION
-    char template[] = "/tmp/tmpXXXXXX";
+    char template_path[] = "/tmp/tmpXXXXXX";
     char* filename = NULL;
     int fd;
     FILE* temp_file;
 
     // Create a unique temporary file
-    fd = mkstemp(template);
+    fd = mkstemp(template_path);
     if (fd == -1) {
         perror("Error creating temporary file");
         return NULL;
@@ -47,10 +47,10 @@ char* write_results(const char* results) {
     }
 
     // Allocate memory for and return the filename
-    filename = strdup(template);
+    filename = strdup(template_path);
     if (filename == NULL) {
         perror("Error allocating memory for filename");
-        unlink(template);  // Delete the temporary file
+        unlink(template_path);  // Delete the temporary file
         return NULL;
     }
 

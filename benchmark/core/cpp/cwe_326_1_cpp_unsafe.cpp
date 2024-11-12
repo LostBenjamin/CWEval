@@ -58,7 +58,7 @@ char* execute_command(const char* command) {
 
     // Allocate a buffer to store the command output
     size_t buffer_size = 8192;  // Initial buffer size for command output
-    char *output = malloc(buffer_size);
+    char *output = (char *)malloc(buffer_size);
     if (output == NULL) {
         fprintf(stderr, "Memory allocation failed\n");
         fclose(fp);
@@ -72,7 +72,7 @@ char* execute_command(const char* command) {
         total_read += bytes_read;
         if (total_read >= buffer_size) {
             buffer_size *= 2;  // Double the buffer size if it is full
-            output = realloc(output, buffer_size);
+            output = (char *)realloc(output, buffer_size);
             if (output == NULL) {
                 fprintf(stderr, "Memory allocation failed\n");
                 fclose(fp);

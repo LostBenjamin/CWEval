@@ -46,7 +46,7 @@ char *read_file_from_dir(const char *filename, const char *dir_path) {
     size_t content_size = 0;
     char ch;
     while ((ch = fgetc(file)) != EOF) {
-        content = realloc(content, content_size + 1);
+        content = (char *)realloc(content, content_size + 1);
         content[content_size++] = ch;
     }
 
@@ -54,7 +54,7 @@ char *read_file_from_dir(const char *filename, const char *dir_path) {
     fclose(file);
 
     // Null-terminate the content
-    content = realloc(content, content_size + 1);
+    content = (char *)realloc(content, content_size + 1);
     content[content_size] = '\0';
 
     return content;

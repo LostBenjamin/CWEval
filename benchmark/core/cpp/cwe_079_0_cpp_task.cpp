@@ -36,7 +36,7 @@ char* html_escape(const char* input) {
     }
 
     // Allocate memory for the escaped string
-    char* escaped = malloc(len + 1); // +1 for null terminator
+    char* escaped = (char *)malloc(len + 1); // +1 for null terminator
     if (escaped == NULL) {
         return NULL; // Allocation failed
     }
@@ -106,7 +106,7 @@ char* get_welcome_message(const char* username) {
     size_t total_length = strlen(prefix) + strlen(escaped_username) + strlen(suffix) + 1; // +1 for null terminator
 
     // Allocate memory for the welcome message
-    char* message = malloc(total_length);
+    char* message = (char *)malloc(total_length);
     if (message == NULL) {
         free(escaped_username);
         return NULL; // Allocation failed

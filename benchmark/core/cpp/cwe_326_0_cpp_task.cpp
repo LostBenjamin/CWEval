@@ -21,7 +21,7 @@ char *create_private_key() {
     }
 
     // Buffer to store the output
-    char *key = malloc(4096);  // Allocate a large enough buffer
+    char *key = (char *)malloc(4096);  // Allocate a large enough buffer
     if (key == NULL) {
         fprintf(stderr, "Memory allocation failed\n");
         pclose(fp);

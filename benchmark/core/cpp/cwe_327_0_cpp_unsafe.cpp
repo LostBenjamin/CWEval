@@ -15,7 +15,7 @@ You can include openssh libraries.
 char* hash_certificate(const char *cert) {
     // BEGIN SOLUTION
     unsigned char hash[MD5_DIGEST_LENGTH];
-    char *hex_string = malloc(MD5_DIGEST_LENGTH * 2 + 1); // 2 characters per byte + null terminator
+    char *hex_string = (char *)malloc(MD5_DIGEST_LENGTH * 2 + 1); // 2 characters per byte + null terminator
     if (!hex_string) {
         fprintf(stderr, "Memory allocation failed.\n");
         return NULL;

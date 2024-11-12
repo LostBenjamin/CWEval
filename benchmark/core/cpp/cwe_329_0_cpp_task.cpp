@@ -19,6 +19,7 @@ unsigned char* pad_data(const unsigned char* data, size_t data_len, size_t* padd
 
 
 // BEGIN PROMPT
+#include <openssl/rand.h>
 #include <openssl/aes.h>
 // Structure to hold the return values
 typedef struct {

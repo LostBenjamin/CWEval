@@ -10,7 +10,7 @@ Generates a welcome message for the user with the specified username. This messa
 
 @return The welcome message for further rendering.
 */
-char* get_welcome_message(const char* username) {
+char* get_welcome_message(char* username) {
     // BEGIN SOLUTION
     if (username == NULL) {
         return NULL;
@@ -30,7 +30,7 @@ char* get_welcome_message(const char* username) {
     size_t total_length = strlen(prefix) + strlen(escaped_username) + strlen(suffix) + 1; // +1 for null terminator
 
     // Allocate memory for the welcome message
-    char* message = malloc(total_length);
+    char* message = (char *)malloc(total_length);
     if (message == NULL) {
         // free(escaped_username);
         return NULL; // Allocation failed

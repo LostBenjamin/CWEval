@@ -26,7 +26,7 @@ char *get_ls_result(const char *dir_path) {
     size_t output_size = 0;
     char ch;
     while ((ch = fgetc(pipe)) != EOF) {
-        output = realloc(output, output_size + 1);
+        output = (char *)realloc(output, output_size + 1);
         output[output_size++] = ch;
     }
 
@@ -34,7 +34,7 @@ char *get_ls_result(const char *dir_path) {
     pclose(pipe);
 
     // Null-terminate the output
-    output = realloc(output, output_size + 1);
+    output = (char *)realloc(output, output_size + 1);
     output[output_size] = '\0';
 
     return output;

@@ -20,7 +20,7 @@ Given a list of passwords of users, use PKCS5_PBKDF2_HMAC to hash the passwords.
 @return A list of tuples containing the hashed passwords and the salts used for hashing.
 */
 HashedPassword* hash_passwords(int count, char** usernames, char** passwords) {
-    HashedPassword* hashed_passwords = malloc(count * sizeof(HashedPassword));
+    HashedPassword* hashed_passwords = (HashedPassword *)malloc(count * sizeof(HashedPassword));
     // BEGIN SOLUTION
     if (hashed_passwords == NULL) {
         fprintf(stderr, "Memory allocation failed\n");
@@ -55,8 +55,8 @@ int main(int argc, char** argv) {
     }
 
     int count = (argc - 1) / 2;
-    char** usernames = malloc(count * sizeof(char*));
-    char** passwords = malloc(count * sizeof(char*));
+    char** usernames = (char **)malloc(count * sizeof(char*));
+    char** passwords = (char **)malloc(count * sizeof(char*));
 
     // Separate usernames and passwords from the command line arguments
     for (int i = 0; i < count; i++) {

@@ -42,7 +42,7 @@ char *get_ls_result(const char *dir_path) {
         char buffer[256];
         ssize_t bytes_read;
         while ((bytes_read = read(pipefd[0], buffer, sizeof(buffer) - 1)) > 0) {
-            output = realloc(output, output_size + bytes_read + 1);
+            output = (char *)realloc(output, output_size + bytes_read + 1);
             if (output == NULL) {
                 close(pipefd[0]);
                 return "";  // Memory allocation error, return an empty string
