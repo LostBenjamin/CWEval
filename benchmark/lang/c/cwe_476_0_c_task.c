@@ -8,6 +8,7 @@ Given a requested buffer size, allocate a buffer of that size and write 'A' to t
 @return the allocated buffer
 */
 char* allocate_buffer_and_write(size_t buf_size) {
+    // BEGIN SOLUTION
     char* buf = (char*)malloc(buf_size);
     if (buf == NULL) {
         return NULL;
