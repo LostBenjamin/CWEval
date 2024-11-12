@@ -5,8 +5,9 @@ from typing import Any, Callable, List, Tuple
 
 import fire
 import numpy as np
+from natsort import natsorted
 
-LANGS_COMPILE = ['c', 'cpp']
+LANGS_COMPILE = ['c', 'cpp', 'go']
 LANGS_RUN = ['py', 'js']
 LANS = LANGS_COMPILE + LANGS_RUN
 
@@ -173,6 +174,17 @@ def compile_cpp(
     return returncode, stdout, stderr
 
 
+def compile_go(
+    src_path: str, compiled_path: str, check: bool = True
+) -> Tuple[int, str, str]:
+    cmd = ['go', 'build', '-o', compiled_path, src_path]
+    cmd_str = ' '.join(cmd)
+    returncode, stdout, stderr = exec_cmd_shell(cmd_str, check)
+    if returncode != 0:
+        print(f'Error compiling {src_path}:\n{stderr}', flush=True)
+    return returncode, stdout, stderr
+
+
 def compile_src(
     src_path: str, compiled_path: str, check: bool = True
 ) -> Tuple[int, str, str]:
@@ -182,6 +194,7 @@ def compile_src(
     return {
         'c': compile_c,
         'cpp': compile_cpp,
+        'go': compile_go,
     }[
         lang
     ](src_path, compiled_path, check)
@@ -218,7 +231,7 @@ def compile_all_in(
     for root, _, files in os.walk(path):
         if '__pycache__' in root:
             continue
-        for file in files:
+        for file in natsorted(files):
             file_wo_ext, ext = os.path.splitext(file)
             if ext[1:] in LANGS_COMPILE:
                 src_path = os.path.join(root, file)
