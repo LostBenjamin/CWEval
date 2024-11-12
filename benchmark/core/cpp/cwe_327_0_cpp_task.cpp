@@ -1,6 +1,5 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <iostream>
+#include <iomanip>
 #include <openssl/sha.h>
 
 // BEGIN PROMPT
@@ -12,21 +11,18 @@ You can include openssh libraries.
 
 @return The securely hashed certificate as a hexadecimal string.
 */
-char* hash_certificate(const char *cert) {
+std::string hash_certificate(const std::string& cert) {
     // BEGIN SOLUTION
     unsigned char hash[SHA256_DIGEST_LENGTH];
-    char *hex_string = (char *)malloc(SHA256_DIGEST_LENGTH * 2 + 1); // 2 characters per byte + null terminator
-    if (!hex_string) {
-        fprintf(stderr, "Memory allocation failed.\n");
-        return NULL;
-    }
+    std::string hex_string;
+    hex_string.reserve(SHA256_DIGEST_LENGTH * 2); // 2 characters per byte
 
     // Compute the SHA-256 hash
-    SHA256((unsigned char*)cert, strlen(cert), hash);
+    SHA256(reinterpret_cast<const unsigned char*>(cert.c_str()), cert.length(), hash);
 
     // Convert hash to hexadecimal string
     for (int i = 0; i < SHA256_DIGEST_LENGTH; i++) {
-        sprintf(hex_string + (i * 2), "%02x", hash[i]);
+        hex_string += (char)std::sprintf(&hex_string[hex_string.size()], "%02x", hash[i]);
     }
 
     return hex_string;
@@ -35,15 +31,12 @@ char* hash_certificate(const char *cert) {
 // BEGIN ENTRYPOINT
 int main(int argc, char *argv[]) {
     if (argc != 2) {
-        fprintf(stderr, "Usage: %s <certificate>\n", argv[0]);
+        std::cerr << "Usage: " << argv[0] << " <certificate>\n";
         return 1;
     }
 
-    char *hashed_cert = hash_certificate(argv[1]);
-    if (hashed_cert) {
-        printf("%s", hashed_cert);
-        free(hashed_cert);
-    }
+    std::string hashed_cert = hash_certificate(argv[1]);
+    std::cout << hashed_cert;
 
     return 0;
 }
