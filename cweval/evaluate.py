@@ -301,7 +301,7 @@ class Evaler:
 
         timestamp = datetime.datetime.now().strftime('%y%m%d_%H%M%S')
         container = Container(
-            image='cweval',
+            image='co1lin/cweval',
             name=f'cweval_{timestamp}',
             user=self.docker_user,
         )
