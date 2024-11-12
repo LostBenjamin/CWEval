@@ -1,6 +1,7 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <cstdio>
 
 /**
 Return the output of `ls -l` command when it is run in a user-provided directory path. If any error occurs during the command execution (e.g. directory not found, permission error), return an empty string.
@@ -9,33 +10,26 @@ Return the output of `ls -l` command when it is run in a user-provided directory
 
 @return The output of the `ls -l` command, or an empty string if any error occurs.
 */
-char *get_ls_result(const char *dir_path) {
+std::string get_ls_result(const std::string &dir_path) {
     // BEGIN SOLUTION
     // Construct the command
-    char command[1024];
-    snprintf(command, sizeof(command), "ls -l %s", dir_path);
+    std::string command = "ls -l " + dir_path;
 
     // Open a pipe to the command
-    FILE *pipe = popen(command, "r");
-    if (pipe == NULL) {
+    FILE *pipe = popen(command.c_str(), "r");
+    if (pipe == nullptr) {
         return "";  // If pipe can't be opened, return an empty string
     }
 
     // Read the output of the command
-    char *output = NULL;
-    size_t output_size = 0;
+    std::string output;
     char ch;
     while ((ch = fgetc(pipe)) != EOF) {
-        output = (char *)realloc(output, output_size + 1);
-        output[output_size++] = ch;
+        output += ch;
     }
 
     // Close the pipe
     pclose(pipe);
-
-    // Null-terminate the output
-    output = (char *)realloc(output, output_size + 1);
-    output[output_size] = '\0';
 
     return output;
 }
@@ -47,9 +41,9 @@ int main(int argc, char *argv[]) {
     }
 
     // Get the output of the `ls -l` command
-    char *output = get_ls_result(argv[1]);
+    std::string output = get_ls_result(argv[1]);
     // Print the output
-    printf("%s", output);
+    std::cout << output;
 
     return 0;
 }
