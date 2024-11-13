@@ -34,7 +34,7 @@ from p_tqdm import p_map
 from tqdm import tqdm
 
 from cweval.ai import make_aiapi
-from cweval.commons import BENCHMARK_DIR
+from cweval.commons import BENCHMARK_DIR, LANGS
 from cweval.ppt import make_prompt
 
 
@@ -49,6 +49,7 @@ class Gener:
         ai: str = 'openai:gpt-4o-mini-2024-07-18',
         ppt: str = 'direct',
         num_proc: int = 8,
+        langs: List[str] = LANGS,
         # AI parameters
         n: int = 20,
         max_completion_tokens: int = 2048,
@@ -58,6 +59,8 @@ class Gener:
         self.ai = ai
         self.ppt = ppt
         self.num_proc = num_proc
+        self.langs = langs
+        print(f'Using langs: {self.langs}')
         self.ai_kwargs = {
             'n': n,
             'max_completion_tokens': max_completion_tokens,
@@ -85,6 +88,8 @@ class Gener:
                     continue
                 task_file_path = os.path.join(root, file)
                 lang = ext[1:]
+                if lang not in self.langs:
+                    continue
                 with open(task_file_path, 'r') as f:
                     task_code = f.read()
                 begin_solution_line_src = ''

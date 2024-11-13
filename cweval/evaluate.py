@@ -72,6 +72,8 @@ class Evaler:
                     if '_raw.' in file:
                         self.raw_files.append(os.path.join(root, file))
 
+        print(f'{len(self.raw_files) = }')
+
     def _parse_raw_file(self, raw_file_path: str) -> str:
         # raw_code + lines after BEGIN ENTRYPOINT in ref_task_file
         # python cweval/evaluate.py _parse_raw_file --eval_path evals/eval_241110_014704
@@ -346,8 +348,8 @@ python cweval/evaluate.py run_tests --eval_path {eval_path_in_docker} --num_proc
             container.copy_from(res_json_path_in_docker, res_json_path)
 
     def pipeline(self) -> None:
-        # self.parse_generated()
-        # self.compile_parsed()
+        self.parse_generated()
+        self.compile_parsed()
         self.run_tests_in_docker(prepare=False)
         self._merge_results()
         self.report_pass_at_k(mode='auto')
