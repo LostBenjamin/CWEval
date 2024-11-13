@@ -1,6 +1,7 @@
 import multiprocessing as mp
 import os
 import subprocess
+import tempfile
 from typing import Any, Callable, List, Tuple
 
 import fire
@@ -13,6 +14,168 @@ LANS = LANGS_COMPILE + LANGS_RUN
 
 COMPILE_DIR = 'compiled'
 BENCHMARK_DIR = 'benchmark'
+
+
+C_HEADERS = '''#include <archive_entry.h>
+#include <jwt.h>
+#include <errno.h>
+#include <sys/wait.h>
+#include <libxml/xpath.h>
+#include <sqlite3.h>
+#include <archive.h>
+#include <ctype.h>
+#include <libxml/parser.h>
+#include <openssl/evp.h>
+#include <openssl/des.h>
+#include <openssl/aes.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <openssl/md5.h>
+#include <stdlib.h>
+#include <libgen.h>
+#include <sys/types.h>
+#include <stdio.h>
+#include <stdbool.h>
+#include <time.h>
+#include <string.h>
+#include <openssl/sha.h>
+#include <regex.h>
+#include <unistd.h>
+#include <openssl/rand.h>
+#include <archive.h>
+#include <archive_entry.h>
+#include <ctype.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <jwt.h>
+#include <libgen.h>
+#include <libxml/parser.h>
+#include <libxml/xpath.h>
+#include <openssl/aes.h>
+#include <openssl/des.h>
+#include <openssl/evp.h>
+#include <openssl/md5.h>
+#include <openssl/rand.h>
+#include <openssl/sha.h>
+#include <regex.h>
+#include <sqlite3.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <time.h>
+#include <unistd.h>
+'''
+
+
+CPP_HEADERS = '''#include <iostream>
+#include <string>
+#include <cstring>
+#include <cctype>
+#include <fstream>
+#include <sstream>
+#include <cstdlib>
+#include <unistd.h>
+#include <filesystem>
+#include <archive.h>
+#include <archive_entry.h>
+#include <memory>
+#include <vector>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <map>
+#include <algorithm>
+#include <ctime>
+#include <iomanip>
+#include <cstdio>
+#include <openssl/aes.h>
+#include <openssl/des.h>
+#include <openssl/rand.h>
+#include <tuple>
+#include <stdexcept>
+#include <jwt.h>
+#include <libxml/parser.h>
+#include <libxml/xpath.h>
+#include <sys/stat.h>
+#include <utility>
+#include <regex>
+#include <sqlite3.h>
+'''
+
+
+PY_HEADERS = '''import hashlib
+import html
+import tarfile
+from urllib.parse import urlparse
+from typing import Tuple, List, Dict
+import yaml
+from Crypto.Cipher import AES, DES
+import datetime
+from tempfile import NamedTemporaryFile, TemporaryFile, mktemp
+from Crypto.Cipher import AES
+import jwt
+import requests
+import os
+import json
+from Crypto.PublicKey import DSA
+from Crypto.PublicKey import RSA
+from yaml import Loader
+import argon2
+import re
+import subprocess
+import sqlite3
+from Crypto.Random import get_random_bytes
+from Crypto.Util.Padding import pad
+from lxml import etree
+from Crypto.Cipher import AES
+from Crypto.Cipher import AES, DES
+from Crypto.PublicKey import DSA
+from Crypto.PublicKey import RSA
+from Crypto.Random import get_random_bytes
+from Crypto.Util.Padding import pad
+from lxml import etree
+from tempfile import NamedTemporaryFile, TemporaryFile, mktemp
+from urllib.parse import urlparse
+from yaml import Loader
+import argon2
+import datetime
+import hashlib
+import html
+import json
+import jwt
+import os
+import re
+import requests
+import sqlite3
+import subprocess
+import tarfile
+import yaml
+'''
+
+
+def complete_code(code: str, lang: str) -> str:
+    if lang == 'c':
+        return C_HEADERS + code
+    elif lang == 'cpp':
+        return CPP_HEADERS + code
+    elif lang == 'py':
+        return PY_HEADERS + code
+    elif lang == 'go':
+        with tempfile.NamedTemporaryFile(mode='w', delete=False) as f:
+            f.write(code)
+            f.flush()
+            filename = f.name
+        cmd = f'goimports -w {filename} {filename}'
+        exec_cmd_shell(cmd, check=False)
+        with open(filename, 'r') as f:
+            fixed_code = f.read()
+        os.remove(filename)
+        return fixed_code
+    else:
+        return code
 
 
 def get_code_from(

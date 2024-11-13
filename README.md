@@ -60,6 +60,13 @@ npm install -g escape-html node-rsa argon2 escape-string-regexp lodash js-yaml j
 export NODE_PATH=$(npm root -g)
 ```
 
+### Golang
+
+```bash
+go install golang.org/x/tools/cmd/goimports@latest
+export PATH=$PATH:~/go/bin
+```
+
 
 ### [`pre-commit`](https://pre-commit.com)
 
