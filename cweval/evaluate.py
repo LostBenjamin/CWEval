@@ -26,7 +26,7 @@ import json
 import multiprocessing as mp
 import os
 import shutil
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 import fire
 from natsort import natsorted
@@ -52,7 +52,19 @@ class Evaler:
     docker_user = 'ubuntu'
     repo_path_in_docker = f'/home/{docker_user}/CWEval'
 
-    def __init__(self, eval_path: str, num_proc: int = 8):
+    def __init__(self, eval_path: str = '', num_proc: int = 8):
+        if not eval_path:
+            # find the latest one under './evals'
+            evals_dir = 'evals'
+            evals = natsorted(
+                filter(
+                    lambda x: os.path.isdir(os.path.join(evals_dir, x))
+                    and x.startswith('eval_'),
+                    os.listdir(evals_dir),
+                )
+            )
+            eval_path = os.path.join(evals_dir, evals[-1])
+
         self.num_proc = num_proc
         self.eval_path = eval_path  # evals/eval_241110_014704
         self.generated_paths = []
@@ -181,11 +193,14 @@ class Evaler:
             return 'py'
         return lang
 
-    def report_pass_at_k(self, k: int = 1, lang: str = '', mode: str = '') -> None:
+    def report_pass_at_k(
+        self, k: int = 1, lang: str = '', mode: str = 'auto'
+    ) -> Tuple[float, float, float] | None:
         if mode == 'auto':
-            for lang in LANGS:
-                for k in [1, 3, 10]:
-                    self.report_pass_at_k(k, lang)
+            for _lang in [f'core/{_l}' for _l in LANGS] + [f'lang/c'] + ['']:
+                for _k in [1, 3, 10]:
+                    self.report_pass_at_k(_k, _lang, mode='')
+            return
 
         all_res_json_path = os.path.join(self.eval_path, 'res_all.json')
         with open(all_res_json_path, 'r') as f:
@@ -193,13 +208,11 @@ class Evaler:
 
         # filter by lang
         if lang:
-            all_res = {
-                k: v for k, v in all_res.items() if self._filename_to_lang(k) == lang
-            }
+            all_res = {path: v for path, v in all_res.items() if lang in path}
 
         num_paths = len(all_res)
         if num_paths == 0:
-            print(f'No case found for {lang = }')
+            # print(f'No case found for {lang = }')
             return
 
         functional_patks: List[float] = []
@@ -236,6 +249,8 @@ class Evaler:
         print(f'secure@{k}\t{secure_rate:.2f}')
         print(f'functional_secure@{k}\t{func_secure_rate:.2f}')
         print(f'=' * 16)
+
+        return functional_rate, secure_rate, func_secure_rate
 
     def parse_generated(self) -> None:
         # python cweval/evaluate.py parse_generated --eval_path evals/eval_241110_014704

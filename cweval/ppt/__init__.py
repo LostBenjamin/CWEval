@@ -43,8 +43,18 @@ You should output your complete implementation in a single code block.
         return ai.send_message(msgs, **kwargs)
 
 
+class SecurePrompt(DirectPrompt):
+    LANG_INSTR = {
+        lang: instr
+        + 'Your code should be secure and should not contain any vulnerabilities. '
+        for lang, instr in DirectPrompt.LANG_INSTR.items()
+    }
+
+
 def make_prompt(ppt: str) -> Prompt:
     if ppt == 'direct':
         return DirectPrompt
+    elif ppt == 'secure':
+        return SecurePrompt
     else:
         raise NotImplementedError(f'Unknown prompt type: {ppt}')
