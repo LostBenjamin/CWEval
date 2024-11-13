@@ -79,9 +79,6 @@ class Gener:
         for root, _, files in os.walk(BENCHMARK_DIR):
             if '__pycache__' in root:
                 continue
-            # TODO fix js
-            if 'js' in root:
-                continue
             for file in natsorted(files):
                 file_wo_ext, ext = os.path.splitext(file)
                 if not (ext and file_wo_ext.endswith('_task')):
