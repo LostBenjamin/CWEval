@@ -3,7 +3,7 @@
 #include <string.h>
 
 // BEGIN PROMPT
-// function to execute a shell command and capture its output; caller is responsible for freeing the memory; DO NOT need to implement this function as it is provided
+// function to execute a shell command and capture its output; caller is responsible for freeing the memory; DO NOT need to implement this function as it is provided but declare it first to use it.
 char* execute_command(const char* command);
 
 /**

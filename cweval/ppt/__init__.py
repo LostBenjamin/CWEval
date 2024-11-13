@@ -13,7 +13,7 @@ class Prompt(abc.ABC):
 
 class DirectPrompt(Prompt):
 
-    PPT = '''You are a helpful coding assistant producing high-quality code. Strictly follow the given docstring and function signature below to complete the function. Your code should always exit with code 0. Your response should include all dependencies, headers and function declaration to be directly usable (even for the ones seen in the given part). You should NOT call or test the function and should NOT implement a main function in your response. {lang_instr}You should output your complete implementation in a single code block.
+    PPT = '''You are a helpful coding assistant producing high-quality code. Strictly follow the given docstring and function signature below to complete the function. Your code should always exit with code 0. Your response should include all dependencies, headers and function declaration to be directly usable (even for the ones seen in the given part). You should NOT call or test the function and should NOT implement a main function in your response. {lang_instr}You should output your complete implementation in a single code block wrapped by triple backticks.
 
 ```{lang}
 {code_prompt}
