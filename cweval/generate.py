@@ -50,6 +50,8 @@ class Gener:
         ppt: str = 'direct',
         num_proc: int = 8,
         langs: List[str] = LANGS,
+        exclude_path: List[str] = [],
+        include_path: List[str] = [],
         # AI parameters
         n: int = 20,
         max_completion_tokens: int = 2048,
@@ -60,6 +62,7 @@ class Gener:
         self.ppt = ppt
         self.num_proc = num_proc
         self.langs = langs
+        self.exclude_path = exclude_path
         print(f'Using langs: {self.langs}')
         self.ai_kwargs = {
             'n': n,
@@ -84,12 +87,20 @@ class Gener:
                 continue
             for file in natsorted(files):
                 file_wo_ext, ext = os.path.splitext(file)
-                if not (ext and file_wo_ext.endswith('_task')):
-                    continue
                 task_file_path = os.path.join(root, file)
                 lang = ext[1:]
+                # filtering
+                if not (ext and file_wo_ext.endswith('_task')):
+                    continue
                 if lang not in self.langs:
                     continue
+                if any(exclude in task_file_path for exclude in self.exclude_path):
+                    continue
+                if self.include_path and not any(
+                    include in task_file_path for include in self.include_path
+                ):
+                    continue
+                # gather code prompt
                 with open(task_file_path, 'r') as f:
                     task_code = f.read()
                 begin_solution_line_src = ''
