@@ -36,6 +36,7 @@ from cweval.commons import (
     COMPILE_DIR,
     LANGS_COMPILE,
     compile_list,
+    complete_code,
     get_code_from,
     pass_at_k,
     run_in_subprocess,
@@ -103,10 +104,7 @@ class Evaler:
         tot_code = f'{raw_code}\n\n{entrypoint_src_line}\n{entrypoint_code}\n'
 
         lang = os.path.splitext(raw_file_path)[1][1:]
-        if lang == 'c':
-            tot_code = f'''#include <stdio.h>
-#include <stdbool.h>
-{tot_code}'''
+        tot_code = complete_code(tot_code, lang)
 
         return tot_code
 
