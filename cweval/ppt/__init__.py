@@ -27,6 +27,7 @@ You should output your complete implementation in a single code block.
         'js': 'You should implement the function in JavaScript. ',
         'c': 'You should implement the function in pure C (NOT C++). ',
         'cpp': 'You should implement the function in C++ with C++ features as much as possible. ',
+        'go': 'You should implement the function in Golang. ',
     }
 
     @classmethod
