@@ -63,6 +63,7 @@ class Gener:
         self.num_proc = num_proc
         self.langs = langs
         self.exclude_path = exclude_path
+        self.include_path = include_path
         print(f'Using langs: {self.langs}')
         self.ai_kwargs = {
             'n': n,
