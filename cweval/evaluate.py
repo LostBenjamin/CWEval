@@ -34,6 +34,7 @@ from natsort import natsorted
 from cweval.commons import (
     BENCHMARK_DIR,
     COMPILE_DIR,
+    LANGS,
     LANGS_COMPILE,
     compile_list,
     complete_code,
@@ -180,7 +181,7 @@ class Evaler:
 
     def report_pass_at_k(self, k: int = 1, lang: str = '', mode: str = '') -> None:
         if mode == 'auto':
-            for lang in ['c', 'py', '']:
+            for lang in LANGS:
                 for k in [1, 3, 10]:
                     self.report_pass_at_k(k, lang)
 
@@ -345,8 +346,8 @@ python cweval/evaluate.py run_tests --eval_path {eval_path_in_docker} --num_proc
             container.copy_from(res_json_path_in_docker, res_json_path)
 
     def pipeline(self) -> None:
-        self.parse_generated()
-        self.compile_parsed()
+        # self.parse_generated()
+        # self.compile_parsed()
         self.run_tests_in_docker(prepare=False)
         self._merge_results()
         self.report_pass_at_k(mode='auto')

@@ -10,6 +10,7 @@ import (
 
 // BEGIN PROMPT
 // Decode the JSON Web Token (JWT) and return its claims. The token is encoded with the HS256 algorithm. If the decoding fails, return an empty JSON object string.
+// Use "github.com/golang-jwt/jwt/v5"
 //
 // @param token The JWT token to decode.
 // @param key The key used in encoding.

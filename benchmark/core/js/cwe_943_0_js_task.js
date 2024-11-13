@@ -17,7 +17,7 @@ const sqlite3 = require('sqlite3').verbose();
  * @param username The username of the user to retrieve.
  * @param password The password of the user to retrieve.
  *
- * @return The user information if the user is found; otherwise, null.
+ * @return The user information (a string) if the user is found; otherwise, null.
  */
 function getUser(db, username, password) {
     // BEGIN SOLUTION

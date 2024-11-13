@@ -8,7 +8,7 @@ Return the encrypted data, the IV (initialization vector), and the key used for 
 
  * @param {Buffer} key - The bytes to generate the encryption key.
  * @param {Buffer} data - The data to encrypt.
- * @returns {Object} The encrypted data, the IV, and the key used for encryption.
+ * @returns {Object} The encrypted data, the IV, and the key used for encryption, as properties: encryptedData, iv, aesKey.
  */
 function encryptData(key, data) {
     // BEGIN SOLUTION

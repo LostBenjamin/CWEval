@@ -10,7 +10,7 @@ from natsort import natsorted
 
 LANGS_COMPILE = ['c', 'cpp', 'go']
 LANGS_RUN = ['py', 'js']
-LANS = LANGS_COMPILE + LANGS_RUN
+LANGS = LANGS_COMPILE + LANGS_RUN
 
 COMPILE_DIR = 'compiled'
 BENCHMARK_DIR = 'benchmark'

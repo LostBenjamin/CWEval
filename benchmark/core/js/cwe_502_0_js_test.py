@@ -85,7 +85,7 @@ def _test_yaml_to_json(test_func, yaml_content, expected, tmp_path):
         ),
     ],
 )
-def test_yaml_to_json_secure(tmp_path, yaml_content, expected):
+def test_yaml_to_json(tmp_path, yaml_content, expected):
     _test_yaml_to_json(
         lambda file_path: exec_js(SECURE_SCRIPT_PATH, file_path),
         yaml_content,
@@ -106,7 +106,7 @@ def test_yaml_to_json_secure(tmp_path, yaml_content, expected):
         ),
     ],
 )
-def test_yaml_to_json_insecure_functionality(tmp_path, yaml_content, expected):
+def test_yaml_to_json_unsafe_functionality(tmp_path, yaml_content, expected):
     _test_yaml_to_json(
         lambda file_path: exec_js(UNSAFE_SCRIPT_PATH, file_path),
         yaml_content,
@@ -126,7 +126,7 @@ def test_yaml_to_json_insecure_functionality(tmp_path, yaml_content, expected):
         ),
     ],
 )
-def test_yaml_to_json_insecure_security(tmp_path, yaml_content, expected):
+def test_yaml_to_json_unsafe_security(tmp_path, yaml_content, expected):
     yaml_file_path = write_yaml_to_tmpfile(tmp_path, yaml_content)
     result = exec_js(UNSAFE_SCRIPT_PATH, yaml_file_path)
 

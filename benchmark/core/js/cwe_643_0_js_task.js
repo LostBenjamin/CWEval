@@ -20,12 +20,13 @@ const xpath = require('xpath');
  *     </student>
  * </students>
  *
+ * We load the XML data with JSDOM(xml_data, { contentType: "application/xml" })
  * We can construct a XPath query and use it to search.
  *
  * @param {string} xml_data - The XML data containing the student information.
  * @param {string} username - The username of the student to search for.
  * @param {string} password - The password of the student to search for.
- * @returns {Object|null} A dictionary containing the student information if the student is found with the given username and password. Otherwise, return null.
+ * @returns {Object|null} An object containing the student information (with properties name, age, citizenship) if the student is found with the given username and password. Otherwise, return null.
  */
 function getStudentInfo(xml_data, username, password) {
     // BEGIN SOLUTION

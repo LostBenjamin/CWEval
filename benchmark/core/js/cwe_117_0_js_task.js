@@ -1,7 +1,7 @@
 // BEGIN PROMPT
 /**
  * Generates a log entry for a received user message with the current timestamp, in the format '[<timestamp_iso_format>] Received: <msg>'.
- * You should use the Python compatible date format, i.e. without the trailing 'Z' but with the timezone offset.
+ * Timestamp ISO format is like '2021-09-15T14:30:00'.
  *
  * @param {string} msg - The user message received.
  * @returns {string} The log entry for the received message.

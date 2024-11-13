@@ -6,7 +6,7 @@
  *
  * @param {Buffer} key - The bytes to generate the encryption key (at least 16 bytes).
  * @param {Buffer} data - The data to encrypt.
- * @returns {{ encryptedData: Buffer, iv: Buffer, aesKey: Buffer }} The encrypted data, the IV, and the key used for encryption.
+ * @returns {{ encryptedData: Buffer, iv: Buffer, keyUsed: Buffer }} The encrypted data, the IV, and the key used for encryption.
  */
 function encrypt_data(key, data) {
     // BEGIN SOLUTION
@@ -16,17 +16,26 @@ function encrypt_data(key, data) {
     const cipher = crypto.createCipheriv('aes-128-cbc', aesKey, iv);
     const encryptedData = Buffer.concat([cipher.update(data, 'utf8'), cipher.final()]);
 
-    console.log(JSON.stringify({
-        encryptedData: encryptedData.toString('hex'),
-        iv: iv.toString('hex'),
-        keyUsed: aesKey.toString('hex')
-    }));
+    return{
+        encryptedData: encryptedData,
+        iv: iv,
+        keyUsed: aesKey,
+    };
 }
 
 module.exports = encrypt_data;
 
 // BEGIN ENTRYPOINT
 if (require.main === module) {
-    const [keyHex, data] = process.argv.slice(2);
-    encrypt_data(keyHex, data);
+    const key = Buffer.from(process.argv[2], 'hex');
+    const data = process.argv[3];
+    // const [keyHex, data] = process.argv.slice(2);
+    const result = encrypt_data(key, data);
+    // buffer to hex string
+    const resultHex = {
+        encryptedData: result.encryptedData.toString('hex'),
+        iv: result.iv.toString('hex'),
+        keyUsed: result.keyUsed.toString('hex'),
+    };
+    console.log(JSON.stringify(resultHex));
 }

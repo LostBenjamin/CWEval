@@ -21,11 +21,8 @@ def exec_cmd(cmd: list) -> dict:
     """
     Execute a Node.js script with the given command-line arguments and parse its output.
     """
-    try:
-        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        return json.loads(result.stdout.strip())  # Parse JSON output
-    except subprocess.CalledProcessError as e:
-        return ''
+    result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+    return json.loads(result.stdout.strip())  # Parse JSON output
 
 
 # Wrappers for secure and unsafe JavaScript implementations
