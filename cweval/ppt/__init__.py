@@ -1,5 +1,5 @@
 import abc
-from typing import Dict, List
+from typing import Any, Dict, List
 
 from cweval.ai import AIAPI
 
@@ -7,7 +7,14 @@ from cweval.ai import AIAPI
 class Prompt(abc.ABC):
     @classmethod
     @abc.abstractmethod
-    def req_ai(cls, ai: AIAPI, lang: str, code_prompt: str, **kwargs) -> List[str]:
+    def req_ai(
+        cls,
+        ai: AIAPI,
+        lang: str,
+        code_prompt: str,
+        metadata: Dict[str, Any] = {},
+        **kwargs,
+    ) -> List[str]:
         raise NotImplementedError
 
 
@@ -31,7 +38,14 @@ You should output your complete implementation in a single code block.
     }
 
     @classmethod
-    def req_ai(cls, ai: AIAPI, lang: str, code_prompt: str, **kwargs) -> List[str]:
+    def req_ai(
+        cls,
+        ai: AIAPI,
+        lang: str,
+        code_prompt: str,
+        metadata: Dict[str, Any] = {},
+        **kwargs,
+    ) -> List[str]:
         msgs = [
             {
                 'role': 'user',

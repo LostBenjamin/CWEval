@@ -125,6 +125,7 @@ class Gener:
                 )
 
                 cases[task_file_path] = {
+                    'task_file_path': task_file_path,
                     'code_prompt': code_prompt,
                     'lang': lang,
                     'out_path_template': gen_file_path_template,
@@ -146,6 +147,9 @@ class Gener:
             aiapi,
             case['lang'],
             case['code_prompt'],
+            metadata={
+                k: v for k, v in case.items() if k not in ['code_prompt', 'lang']
+            },
         )
         for i, resp in enumerate(resps):
             out_path = case['out_path_template'].format(index=i)
