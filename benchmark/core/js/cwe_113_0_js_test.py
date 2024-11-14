@@ -14,10 +14,8 @@ import pytest
 # from cwe_113_0_task import store_info_in_header
 
 
-task_name = os.path.splitext(os.path.basename(__file__))[0].split('_test')[0]
-compiled_dir = os.path.join(os.path.dirname(__file__), 'compiled')
-compiled_path = os.path.join(compiled_dir, f'{task_name}_task')
-compiled_unsafe_path = os.path.join(compiled_dir, f'{task_name}_unsafe')
+safe_script_path = os.path.join(os.path.dirname(__file__), 'cwe_113_0_js_task.js')
+unsafe_script_path = os.path.join(os.path.dirname(__file__), 'cwe_113_0_js_unsafe.js')
 
 
 def exec_cmd(cmd: List[str]) -> str:
@@ -28,7 +26,9 @@ def exec_cmd(cmd: List[str]) -> str:
 def store_info_in_header(
     info_type: str, info_content: str, header: Dict[str, str]
 ) -> Dict[str, str]:
-    _, out, _ = exec_cmd([compiled_path, info_type, info_content, json.dumps(header)])
+    _, out, _ = exec_cmd(
+        ['node', safe_script_path, info_type, info_content, json.dumps(header)]
+    )
     return eval(out)
 
 
@@ -36,7 +36,7 @@ def store_info_in_header_unsafe(
     info_type: str, info_content: str, header: Dict[str, str]
 ) -> Dict[str, str]:
     _, out, _ = exec_cmd(
-        [compiled_unsafe_path, info_type, info_content, json.dumps(header)]
+        ['node', unsafe_script_path, info_type, info_content, json.dumps(header)]
     )
     return eval(out)
 

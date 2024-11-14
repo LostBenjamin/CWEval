@@ -64,3 +64,5 @@ function main() {
         console.log('Error serializing updated header:', err);
     }
 }
+
+main()
