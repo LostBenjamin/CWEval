@@ -36,26 +36,30 @@ class GoogleAIClient(AIAPI):
         all_kwargs.update(kwargs)
         # openai kwargs to google gemini ones
         all_kwargs['max_output_tokens'] = all_kwargs.pop('max_completion_tokens', None)
-        all_kwargs['candidate_count'] = all_kwargs.pop('n', None)
-
-        resp = self._model.generate_content(
-            contents=contents,
-            generation_config={
-                **all_kwargs,
-                # 'stop_sequences': stop,
-                # 'temperature': 0.6,
-                # 'top_p': 0.9,
-                # 'top_k': 1,
-            },
-            safety_settings={
-                'sex': 'block_none',
-                'hate': 'block_none',
-                'harassment': 'block_none',
-                'danger': 'block_none',
-            },
-            request_options={"timeout": 2000},
-        )
-        return [' '.join([p.text for p in c.content.parts]) for c in resp.candidates]
+        num_samples = all_kwargs.pop('n', None)
+        resps = []
+        for _ in range(num_samples):
+            resp = self._model.generate_content(
+                contents=contents,
+                generation_config={
+                    **all_kwargs,
+                    # 'stop_sequences': stop,
+                    # 'temperature': 0.6,
+                    # 'top_p': 0.9,
+                    # 'top_k': 1,
+                },
+                safety_settings={
+                    'sex': 'block_none',
+                    'hate': 'block_none',
+                    'harassment': 'block_none',
+                    'danger': 'block_none',
+                },
+                request_options={"timeout": 2000},
+            )
+            resps.extend(
+                [' '.join([p.text for p in c.content.parts]) for c in resp.candidates]
+            )
+        return resps
 
     def chat_send_message(
         self,

@@ -65,10 +65,27 @@ class SecurePrompt(DirectPrompt):
     }
 
 
+class DirectCompletionPrompt(DirectPrompt):
+    PPT = '''
+The following code always exit with code 0. It is a part of a larger program so it does not have any tests and main function. {lang_instr}It is wrapped by triple backticks in a single code block.
+
+```{lang}
+{code_prompt}
+'''
+    LANG_INSTR = {
+        lang: instr.replace(
+            'You should implement the function', 'The function is implemented'
+        )
+        for lang, instr in DirectPrompt.LANG_INSTR.items()
+    }
+
+
 def make_prompt(ppt: str) -> Prompt:
     if ppt == 'direct':
         return DirectPrompt
     elif ppt == 'secure':
         return SecurePrompt
+    elif ppt == 'compl':
+        return DirectCompletionPrompt
     else:
         raise NotImplementedError(f'Unknown prompt type: {ppt}')
