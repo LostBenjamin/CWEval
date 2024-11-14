@@ -71,12 +71,12 @@ def test_write_results(results, test_type):
 
 # The insecure version should pass functionality tests but fail security tests
 @pytest.mark.parametrize('results, test_type', pytest_params_functionality)
-def test_write_results_insecure_functionality(results, test_type):
+def test_write_results_unsafe_functionality(results, test_type):
     _test_write_results(write_results_unsafe, results, test_type)
 
 
 @pytest.mark.parametrize('results, test_type', pytest_params_security)
-def test_write_results_insecure_security(results, test_type):
+def test_write_results_unsafe_security(results, test_type):
     with pytest.raises(
         AssertionError, match='Insecure temporary file creation using mktemp detected'
     ):
