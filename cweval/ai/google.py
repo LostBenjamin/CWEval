@@ -1,99 +1,101 @@
-import random
-import time
 from typing import Dict, List
 
 import google.generativeai as genai
-from detection.ai.base import AIAPI
+
+from cweval.ai import AIAPI
 
 
 class GoogleAIClient(AIAPI):
     def __init__(
         self,
         api_key: str,
-        model_name: str = 'gemini-1.5-flash-001',
-        system_message: str | None = None,
+        model_name: str = 'gemini-1.5-flash-002',
         **kwargs,
     ) -> None:
         genai.configure(api_key=api_key)
         self._model = genai.GenerativeModel(model_name)
-        self.chat = self._model.start_chat(
-            history=[
-                # {
-                #     'role': 'user',
-                #     'parts': ['You are an helpful expert in computer security.']
-                # }
-            ]
-        )
         self.kwargs = kwargs
 
     def send_message(
         self,
-        content: str,
-        stop: List[str] = None,
-        retries: int = 1,
-    ) -> str:
-        _sleep_time = 1
-        for i in range(retries):
-            try:
-                response = self.chat.send_message(
-                    content=content,
-                    safety_settings={
-                        'sex': 'block_none',
-                        'hate': 'block_none',
-                        'harassment': 'block_none',
-                        'danger': 'block_none',
-                    },
-                    generation_config={
-                        'stop_sequences': stop,
-                        **self.kwargs,
-                        # 'temperature': 0.6,
-                        # 'top_p': 0.9,
-                        # 'top_k': 1,
-                    },
-                    request_options={"timeout": 1000},
-                )
-                return response.text
-            except Exception as e:
-                import traceback
+        messages: List[Dict[str, str]],
+        **kwargs,
+    ) -> List[str]:
+        # assert len(messages) == 1, f'{len(messages) = }'
+        # content = messages[-1]['content']
 
-                traceback.print_exc()
-                time.sleep(_sleep_time)
-                _sleep_time = min(10 + random.random(), 2 * _sleep_time)
-        else:
-            # print(f'[chat_send_msg] Failed to send_message')
-            # from IPython import embed; embed()
-            raise Exception('[chat_send_msg] Failed to send_message')
-
-    def clear_history(self) -> None:
-        self.chat = self._model.start_chat(history=[])
-
-    def history_str(self, roles: List[str] = []) -> str:
-        return '\n\n\n'.join(
-            f'>>>> role = {h.role} <<<<\n\n' + ''.join([p.text for p in h.parts])
-            for h in self.chat.history
-            if not roles or h.role in roles
-        )
-
-    @property
-    def history_list(self) -> List[Dict[str, str]]:
-        role_map = {
-            'user': 'user',
-            'model': 'assistant',
-        }
-        return [
+        contents = [
             {
-                'role': role_map[h.role],
-                'content': ''.join([p.text for p in h.parts]),
+                'role': 'user' if m['role'] == 'user' else 'model',
+                'parts': m['content'],
             }
-            for h in self.chat.history
+            for m in messages
         ]
 
-    def edit_history(self, idx: int, content: str):
-        try:
-            assert len(self.chat.history[idx].parts) == 1
-        except Exception as e:
-            print(self.chat.history[idx].parts, flush=True)
-            from IPython import embed
+        all_kwargs = self.kwargs.copy()
+        all_kwargs.update(kwargs)
+        # openai kwargs to google gemini ones
+        all_kwargs['max_output_tokens'] = all_kwargs.pop('max_completion_tokens', None)
+        all_kwargs['candidate_count'] = all_kwargs.pop('n', None)
 
-            embed()
-        self.chat.history[idx].parts[0].text = content
+        resp = self._model.generate_content(
+            contents=contents,
+            generation_config={
+                **all_kwargs,
+                # 'stop_sequences': stop,
+                # 'temperature': 0.6,
+                # 'top_p': 0.9,
+                # 'top_k': 1,
+            },
+            safety_settings={
+                'sex': 'block_none',
+                'hate': 'block_none',
+                'harassment': 'block_none',
+                'danger': 'block_none',
+            },
+            request_options={"timeout": 2000},
+        )
+        return [' '.join([p.text for p in c.content.parts]) for c in resp.candidates]
+
+    def chat_send_message(
+        self,
+        messages: List[Dict[str, str]],
+        **kwargs,
+    ) -> str:
+        raise NotImplementedError
+        chat = self._model.start_chat(
+            history=[
+                {
+                    'role': 'user' if m['role'] == 'user' else 'model',
+                    'parts': m['content'],
+                }
+                for m in messages[:-1]
+            ]
+        )
+        assert messages[-1]['role'] == 'user', f'{messages[-1] = }'
+        content = messages[-1]['content']
+
+        all_kwargs = self.kwargs.copy()
+        all_kwargs.update(kwargs)
+        # openai kwargs to google gemini ones
+        all_kwargs['max_output_tokens'] = all_kwargs.pop('max_completion_tokens', None)
+        all_kwargs['candidate_count'] = all_kwargs.pop('n', None)
+
+        resp = chat.send_message(
+            content=content,
+            generation_config={
+                **all_kwargs,
+                # 'stop_sequences': stop,
+                # 'temperature': 0.6,
+                # 'top_p': 0.9,
+                # 'top_k': 1,
+            },
+            safety_settings={
+                'sex': 'block_none',
+                'hate': 'block_none',
+                'harassment': 'block_none',
+                'danger': 'block_none',
+            },
+            request_options={"timeout": 2000},
+        )
+        return resp.text

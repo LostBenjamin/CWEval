@@ -138,8 +138,9 @@ class Gener:
         ppt: str,
         case: Dict[str, str],
         ai_kwargs: Dict[str, Any],
+        rank: int,
     ) -> None:
-        aiapi = make_aiapi(ai, **ai_kwargs)
+        aiapi = make_aiapi(ai, rank, **ai_kwargs)
         prompt = make_prompt(ppt)
         resps = prompt.req_ai(
             aiapi,
@@ -159,6 +160,7 @@ class Gener:
             [self.ppt] * len(self.cases),
             self.cases.values(),
             [self.ai_kwargs] * len(self.cases),
+            range(len(self.cases)),  # workaround: index as rank
             num_cpus=self.num_proc,
         )
 

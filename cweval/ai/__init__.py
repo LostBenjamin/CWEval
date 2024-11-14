@@ -40,36 +40,33 @@ def make_aiapi(ai: str, rank: int = 0, **kwargs) -> AIAPI:
             **kwargs,
         )
 
+    elif if_name == 'google':
+        from cweval.ai.google import GoogleAIClient
+
+        return GoogleAIClient(
+            api_key=os.environ['GG_API_KEY'],
+            model_name=model_name,
+            **kwargs,
+        )
+
+    elif if_name == 'anvtx':
+        from cweval.ai.anvtx import AnVtxClient
+
+        return AnVtxClient(
+            model_name=model_name,
+            cred_file=os.environ['GC_CRED_FILE'],
+            project_id=os.environ['GC_PROJECT_ID'],
+            **kwargs,
+        )
+
     elif if_name == 'gcloud':
-        from detection.ai.gcloud import GCloudClient
+        from cweval.ai.gcloud import GCloudClient
 
         return GCloudClient(
             model_name=model_name,
             rank=rank,
             cred_file=os.environ['GC_CRED_FILE'],
             project_id=os.environ['GC_PROJECT_ID'],
-            max_tokens=max_output_tokens,
-            **kwargs,
-        )
-
-    elif if_name == 'google':
-        from detection.ai.google import GoogleAIClient
-
-        return GoogleAIClient(
-            api_key=os.environ['GG_API_KEY'],
-            model_name=model_name,
-            max_output_tokens=max_output_tokens,
-            **kwargs,
-        )
-
-    elif if_name == 'anvtx':
-        from detection.ai.anvtx import AnVtxClient
-
-        return AnVtxClient(
-            model_name=model_name,
-            cred_file=os.environ['GC_CRED_FILE'],
-            project_id=os.environ['GC_PROJECT_ID'],
-            max_tokens=max_output_tokens,
             **kwargs,
         )
 
