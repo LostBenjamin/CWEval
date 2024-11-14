@@ -42,7 +42,7 @@ from cweval.commons import (
     pass_at_k,
     run_in_subprocess,
 )
-from cweval.run_tests import run_tests
+from cweval.run_tests import TestFileResult, run_tests
 from cweval.sandbox import Container
 
 
@@ -84,7 +84,7 @@ class Evaler:
                     if '_raw.' in file:
                         self.raw_files.append(os.path.join(root, file))
 
-        print(f'{len(self.raw_files) = }')
+        print(f'{len(self.raw_files) = }', flush=True)
 
     def _parse_raw_file(self, raw_file_path: str) -> str:
         # raw_code + lines after BEGIN ENTRYPOINT in ref_task_file
@@ -295,8 +295,22 @@ class Evaler:
                 all_gen_results.append(file_res_list)
         else:
             mp.set_start_method('spawn')
-            with mp.Pool(self.num_proc, maxtasksperchild=1) as pool:
-                all_gen_results = pool.map(run_tests, self.generated_paths, chunksize=1)
+            all_gen_results: List[TestFileResult] = []
+            # fix mysterious hanging issue
+            for i in range(len(self.generated_paths) // self.num_proc + 1):
+                generated_paths_i = self.generated_paths[
+                    i * self.num_proc : (i + 1) * self.num_proc
+                ]
+                assert len(generated_paths_i) <= self.num_proc
+                with mp.Pool(self.num_proc, maxtasksperchild=1) as pool:
+                    gen_results_i = pool.map(run_tests, generated_paths_i, chunksize=1)
+                all_gen_results.extend(gen_results_i)
+                print(f'Finished {i = } th batch', flush=True)
+
+            # with mp.Pool(self.num_proc, maxtasksperchild=1) as pool:
+            #     all_gen_results = pool.map(run_tests, self.generated_paths, chunksize=1)
+
+        print(f'Finished running tests in {self.eval_path = }', flush=True)
 
         for file_res_list, generated_path in zip(all_gen_results, self.generated_paths):
             all_res = {
