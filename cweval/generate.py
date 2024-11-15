@@ -77,6 +77,17 @@ class Gener:
                 'evals', f'eval_{datetime.datetime.now().strftime("%y%m%d_%H%M%S")}'
             )
         else:
+            # check if eval_dir exists
+            if os.path.exists(eval_dir):
+                flag = (
+                    input(f'{eval_dir} already exists, overwrite? (y/n): ')
+                    .strip()
+                    .lower()
+                )
+                if flag != 'y':
+                    print(f'Exiting...')
+                    exit(0)
+
             self.eval_dir = eval_dir
 
         self.cases = self._get_cases()
@@ -141,6 +152,17 @@ class Gener:
         ai_kwargs: Dict[str, Any],
         rank: int,
     ) -> None:
+        num_samples = ai_kwargs.get('n', 1)
+        for i in range(num_samples):
+            out_path = case['out_path_template'].format(index=i)
+            if not os.path.exists(out_path):
+                break
+        else:
+            print(
+                f'{case["out_path_template"]} already completed, skipping', flush=True
+            )
+            return
+
         aiapi = make_aiapi(ai, rank, **ai_kwargs)
         prompt = make_prompt(ppt)
         resps = prompt.req_ai(

@@ -88,6 +88,8 @@ def run_tests(
 ) -> List[TestFileResult]:
     print(f'Start running tests in {test_path = }', flush=True)
     result_collector = TestResultCollector(timeout_per_test=timeout_per_test)
+    # temp fix:
+    os._exit = lambda *args: None
     pytest.main([test_path, '--tb=short', *args], plugins=[result_collector])
     print(f'Finished running tests in {test_path = }', flush=True)
     return list(result_collector.file_results.values())

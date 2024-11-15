@@ -79,6 +79,22 @@ The following code always exit with code 0. It is a part of a larger program so 
         for lang, instr in DirectPrompt.LANG_INSTR.items()
     }
 
+    @classmethod
+    def req_ai(
+        cls,
+        ai: AIAPI,
+        lang: str,
+        code_prompt: str,
+        metadata: Dict[str, Any] = {},
+        **kwargs,
+    ) -> List[str]:
+        resps = DirectPrompt.req_ai(ai, lang, code_prompt, metadata, **kwargs)
+        prompt = cls.PPT.format(
+            lang=lang, lang_instr=cls.LANG_INSTR[lang], code_prompt=code_prompt
+        )
+        # prepend prompt to each response to get the complete texts
+        return [prompt + resp for resp in resps]
+
 
 def make_prompt(ppt: str) -> Prompt:
     if ppt == 'direct':

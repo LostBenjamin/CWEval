@@ -17,7 +17,7 @@ class AIAPI(abc.ABC):
 
 
 def make_aiapi(ai: str, rank: int = 0, **kwargs) -> AIAPI:
-    if_name, model_name = ai.split(':')
+    if_name, model_name = ai.split(':', maxsplit=1)
 
     if if_name == 'openai':
         from cweval.ai.openai import OpenAIClient
@@ -67,6 +67,22 @@ def make_aiapi(ai: str, rank: int = 0, **kwargs) -> AIAPI:
             rank=rank,
             cred_file=os.environ['GC_CRED_FILE'],
             project_id=os.environ['GC_PROJECT_ID'],
+            **kwargs,
+        )
+
+    elif if_name == 'aws':
+        from cweval.ai.aws import AWSAIClient
+
+        return AWSAIClient(
+            model_name=model_name,
+            **kwargs,
+        )
+
+    elif if_name == 'aws_ivk':
+        from cweval.ai.aws_ivk import AWSIvkAIClient
+
+        return AWSIvkAIClient(
+            model_name=model_name,
             **kwargs,
         )
 

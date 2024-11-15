@@ -369,6 +369,15 @@ def compile_list(
     check: bool = True,
     num_proc: int = 8,
 ) -> List[Tuple[int, str, str]]:
+    # compiler sanity check
+    cmd_checks = [
+        'gcc --version',
+        'g++ --version',
+        'go version',
+    ]
+    for cmd_check in cmd_checks:
+        returncode, stdout, stderr = exec_cmd_shell(cmd_check, check=True)
+
     assert len(src_path_list) == len(compiled_path_list)
     rets: List[Tuple[int, str, str]] = []
     if num_proc == 1:
