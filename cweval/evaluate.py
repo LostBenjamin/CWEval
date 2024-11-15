@@ -198,7 +198,11 @@ class Evaler:
     ) -> Tuple[float, float, float] | None:
         if mode == 'auto':
             for _lang in [f'core/{_l}' for _l in LANGS] + [f'lang/c'] + ['']:
-                for _k in [1, 10, 50, 100]:
+                for _k in [
+                    1,
+                    10,
+                    50,
+                ]:
                     self.report_pass_at_k(_k, _lang, mode='')
             return
 

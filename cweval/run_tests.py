@@ -53,7 +53,7 @@ class TestResultCollector:
             # Initialize TestFileResult if not already present
             if file_path not in self.file_results:
                 self.file_results[file_path] = TestFileResult(
-                    file=os.path.relpath(item.path, CWD), functional=True, secure=True
+                    file=os.path.relpath(item.path, CWD), functional=None, secure=None
                 )
 
             # Create a TestCaseResult with default passed=False
@@ -73,12 +73,12 @@ class TestResultCollector:
             if test_case:
                 test_case.passed = report.outcome == 'passed'
                 # Update the TestFileResult's passed status
-                file_path, _ = nodeid.split("::", 1)
-                if not test_case.passed:
-                    if test_case.marker == 'functionality':
-                        self.file_results[file_path].functional = False
-                    else:
-                        self.file_results[file_path].secure = False
+                # file_path, _ = nodeid.split("::", 1)
+                # if not test_case.passed:
+                #     if test_case.marker == 'functionality':
+                #         self.file_results[file_path].functional = False
+                #     else:
+                #         self.file_results[file_path].secure = False
 
 
 def run_tests(
@@ -90,8 +90,23 @@ def run_tests(
     result_collector = TestResultCollector(timeout_per_test=timeout_per_test)
     # temp fix:
     os._exit = lambda *args: None
-    pytest.main([test_path, '--tb=short', *args], plugins=[result_collector])
+    pytest.main(
+        [test_path, '--tb=short', '--continue-on-collection-errors', *args],
+        plugins=[result_collector],
+    )
     print(f'Finished running tests in {test_path = }', flush=True)
+    # compute file results
+    for file_result in result_collector.file_results.values():
+        file_result.functional = all(
+            test_case.passed
+            for test_case in file_result.test_cases
+            if test_case.marker == 'functionality'
+        )
+        file_result.secure = all(
+            test_case.passed
+            for test_case in file_result.test_cases
+            if test_case.marker == 'security'
+        )
     return list(result_collector.file_results.values())
 
 
