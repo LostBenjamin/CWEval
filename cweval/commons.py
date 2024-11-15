@@ -275,16 +275,20 @@ def pass_at_k(n, c, k) -> float:
     return 1.0 - np.prod(1.0 - k / np.arange(n - c + 1, n + 1))
 
 
-def exec_cmd(cmd: List[str], check: bool = True) -> Tuple[int, str, str]:
+def exec_cmd(
+    cmd: List[str], check: bool = True, capture_output: bool = True
+) -> Tuple[int, str, str]:
     assert isinstance(cmd, list)
-    result = subprocess.run(cmd, capture_output=True, text=True, check=check)
+    result = subprocess.run(cmd, capture_output=capture_output, text=True, check=check)
     return result.returncode, result.stdout, result.stderr
 
 
-def exec_cmd_shell(cmd: str, check: bool = True) -> Tuple[int, str, str]:
+def exec_cmd_shell(
+    cmd: str, check: bool = True, capture_output: bool = True
+) -> Tuple[int, str, str]:
     assert isinstance(cmd, str)
     result = subprocess.run(
-        cmd, capture_output=True, text=True, check=check, shell=True
+        cmd, capture_output=capture_output, text=True, check=check, shell=True
     )
     return result.returncode, result.stdout, result.stderr
 

@@ -12,6 +12,7 @@ class TestCaseResult:
     name: str
     marker: str
     passed: bool
+    run: bool
 
 
 @dataclass
@@ -57,7 +58,9 @@ class TestResultCollector:
                 )
 
             # Create a TestCaseResult with default passed=False
-            test_case = TestCaseResult(name=test_name, marker=marker, passed=False)
+            test_case = TestCaseResult(
+                name=test_name, marker=marker, passed=False, run=False
+            )
             self.file_results[file_path].test_cases.append(test_case)
 
             # Map nodeid to test_case_result for later reference
@@ -70,15 +73,17 @@ class TestResultCollector:
         if report.when == 'call':
             nodeid = report.nodeid
             test_case = self.nodeid_to_test_case.get(nodeid)
-            if test_case:
-                test_case.passed = report.outcome == 'passed'
-                # Update the TestFileResult's passed status
-                # file_path, _ = nodeid.split("::", 1)
-                # if not test_case.passed:
-                #     if test_case.marker == 'functionality':
-                #         self.file_results[file_path].functional = False
-                #     else:
-                #         self.file_results[file_path].secure = False
+            # if test_case:
+            test_case.run = True
+            test_case.passed = report.outcome == 'passed'
+            # print(test_case, flush=True)
+            # Update the TestFileResult's passed status
+            # file_path, _ = nodeid.split("::", 1)
+            # if not test_case.passed:
+            #     if test_case.marker == 'functionality':
+            #         self.file_results[file_path].functional = False
+            #     else:
+            #         self.file_results[file_path].secure = False
 
 
 def run_tests(
@@ -89,24 +94,31 @@ def run_tests(
     print(f'Start running tests in {test_path = }', flush=True)
     result_collector = TestResultCollector(timeout_per_test=timeout_per_test)
     # temp fix:
+    _os_exit = os._exit
     os._exit = lambda *args: None
     pytest.main(
         [test_path, '--tb=short', '--continue-on-collection-errors', *args],
         plugins=[result_collector],
     )
-    print(f'Finished running tests in {test_path = }', flush=True)
+    os._exit = _os_exit
+    print(f'[run_tests] Finished running tests in {test_path = }', flush=True)
     # compute file results
     for file_result in result_collector.file_results.values():
+        # for test_case in file_result.test_cases:
+        #     is_unsafe = '_unsafe' in test_case.name
+        #     assert is_unsafe == (not test_case.run)
         file_result.functional = all(
             test_case.passed
             for test_case in file_result.test_cases
-            if test_case.marker == 'functionality'
+            if test_case.marker == 'functionality' and '_unsafe' not in test_case.name
         )
         file_result.secure = all(
             test_case.passed
             for test_case in file_result.test_cases
-            if test_case.marker == 'security'
+            if test_case.marker == 'security' and '_unsafe' not in test_case.name
         )
+        # print(file_result.brief_str(), flush=True)
+
     return list(result_collector.file_results.values())
 
 

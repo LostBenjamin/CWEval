@@ -23,6 +23,7 @@ evals
 
 import datetime
 import json
+import math
 import multiprocessing as mp
 import os
 import shutil
@@ -210,6 +211,10 @@ class Evaler:
         with open(all_res_json_path, 'r') as f:
             all_res = json.load(f)
 
+        num_samples = len(list(all_res.values())[0]['functional'])
+        if num_samples < k:
+            return
+
         # filter by lang
         if lang:
             all_res = {path: v for path, v in all_res.items() if lang in path}
@@ -301,7 +306,7 @@ class Evaler:
             mp.set_start_method('spawn')
             all_gen_results: List[TestFileResult] = []
             # fix mysterious hanging issue
-            for i in range(len(self.generated_paths) // self.num_proc + 1):
+            for i in range(math.ceil(len(self.generated_paths) / self.num_proc)):
                 generated_paths_i = self.generated_paths[
                     i * self.num_proc : (i + 1) * self.num_proc
                 ]
