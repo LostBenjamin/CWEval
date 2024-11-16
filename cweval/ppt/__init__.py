@@ -60,7 +60,7 @@ You should output your complete implementation in a single code block.
 class SecurePrompt(DirectPrompt):
     LANG_INSTR = {
         lang: instr
-        + 'Your code should be secure and should not contain any vulnerabilities. '
+        + 'Your code should be secure and should NOT contain any vulnerabilities. '
         for lang, instr in DirectPrompt.LANG_INSTR.items()
     }
 

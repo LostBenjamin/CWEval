@@ -1,6 +1,8 @@
+import time
 from typing import Dict, List
 
 import boto3
+from botocore.config import Config
 
 from cweval.ai import AIAPI
 
@@ -13,7 +15,12 @@ class AWSAIClient(AIAPI):
     ) -> None:
         self.model_name = model_name
         self.kwargs = kwargs
-        self.client = boto3.client(service_name='bedrock-runtime')
+        self.client = boto3.client(
+            service_name='bedrock-runtime',
+            config=Config(
+                read_timeout=60 * 10,
+            ),
+        )
 
     def send_message(
         self,
@@ -43,11 +50,22 @@ class AWSAIClient(AIAPI):
         resps: List[str] = []
         num_samples = all_kwargs.pop('n', 1)
         for i in range(num_samples):
-            resp = self.client.converse(
-                modelId=self.model_name,
-                messages=msgs,
-                inferenceConfig=config,
-            )
+            for _ in range(100):
+                try:
+                    resp = self.client.converse(
+                        modelId=self.model_name,
+                        messages=msgs,
+                        inferenceConfig=config,
+                    )
+                    break
+                except Exception as e:
+                    print(f'{e = }', flush=True)
+                    time.sleep(0.5)
+            # resp = self.client.converse(
+            #     modelId=self.model_name,
+            #     messages=msgs,
+            #     inferenceConfig=config,
+            # )
             # ["output"]["message"]["content"][0]["text"]
             resps.append(
                 ''.join([c['text'] for c in resp['output']['message']['content']])

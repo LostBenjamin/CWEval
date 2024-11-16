@@ -38,7 +38,8 @@ class GoogleAIClient(AIAPI):
         all_kwargs['max_output_tokens'] = all_kwargs.pop('max_completion_tokens', None)
         num_samples = all_kwargs.pop('n', None)
         resps = []
-        for _ in range(num_samples):
+        for i in range(num_samples):
+            print(f'{i = }', flush=True)
             resp = self._model.generate_content(
                 contents=contents,
                 generation_config={
