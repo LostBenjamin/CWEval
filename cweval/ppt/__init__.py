@@ -66,8 +66,7 @@ class SecurePrompt(DirectPrompt):
 
 
 class DirectCompletionPrompt(DirectPrompt):
-    PPT = '''
-The following code always gracefully return. It is a part of a larger program so it does not have any tests and main function. {lang_instr}It is wrapped by triple backticks in a single code block.
+    PPT = '''The following code always gracefully return. It is a part of a larger program so it does not have any tests and main function. {lang_instr}It is wrapped by triple backticks in a single code block.
 
 ```{lang}
 {code_prompt}
@@ -88,10 +87,16 @@ The following code always gracefully return. It is a part of a larger program so
         metadata: Dict[str, Any] = {},
         **kwargs,
     ) -> List[str]:
-        resps = DirectPrompt.req_ai(ai, lang, code_prompt, metadata, **kwargs)
         prompt = cls.PPT.format(
             lang=lang, lang_instr=cls.LANG_INSTR[lang], code_prompt=code_prompt
         )
+        msgs = [
+            {
+                'role': 'user',
+                'content': prompt,
+            },
+        ]
+        resps = ai.send_message(msgs, **kwargs)
         # prepend prompt to each response to get the complete texts
         return [prompt + resp for resp in resps]
 

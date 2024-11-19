@@ -1,4 +1,5 @@
 import json
+import time
 from typing import Dict, List
 
 from cweval.ai.aws import AWSAIClient
@@ -27,10 +28,20 @@ class AWSIvkAIClient(AWSAIClient):
         resps: List[str] = []
         num_samples = all_kwargs.pop('n', 1)
         for i in range(num_samples):
-            resp = self.client.invoke_model(
-                modelId=self.model_name,
-                body=json.dumps(req_dict),
-            )
+            for _ in range(100):
+                try:
+                    resp = self.client.invoke_model(
+                        modelId=self.model_name,
+                        body=json.dumps(req_dict),
+                    )
+                    break
+                except Exception as e:
+                    print(f'{e = }', flush=True)
+                    time.sleep(0.5)
+            # resp = self.client.invoke_model(
+            #     modelId=self.model_name,
+            #     body=json.dumps(req_dict),
+            # )
             model_resp = json.loads(resp['body'].read())
             resps.append(model_resp['generation'])
 

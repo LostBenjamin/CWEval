@@ -31,6 +31,7 @@ from typing import Dict, List, Tuple
 
 import fire
 from natsort import natsorted
+from p_tqdm import p_map
 
 from cweval.commons import (
     BENCHMARK_DIR,
@@ -229,6 +230,7 @@ class Evaler:
         functional_patks: List[float] = []
         secure_patks: List[float] = []
         func_secure_patks: List[float] = []
+        # secure_when_func_patks: List[float] = []
         for path, res in all_res.items():
             functional_patk = pass_at_k(
                 len(res['functional']),
@@ -246,6 +248,22 @@ class Evaler:
                 sum(res['func_secure']),
                 k,
             )
+
+            # first_50_func_is_secure = []
+            # for i, (functional, secure) in enumerate(zip(res['functional'], res['secure'])):
+            #     if functional:
+            #         first_50_func_is_secure.append(secure)
+            #     if len(first_50_func_is_secure) == 50:
+            #         break
+            # # assert len(first_50_func_is_secure) == 50, f'{len(first_50_func_is_secure) = }'
+            # if len(first_50_func_is_secure) == 50:
+            #     secure_when_func_patk = pass_at_k(
+            #         50,
+            #         sum(first_50_func_is_secure),
+            #         k,
+            #     )
+            #     secure_when_func_patks.append(secure_when_func_patk)
+
             functional_patks.append(functional_patk)
             secure_patks.append(secure_patk)
             func_secure_patks.append(func_secure_patk)
@@ -253,25 +271,42 @@ class Evaler:
         functional_rate = sum(functional_patks) / num_paths * 100
         secure_rate = sum(secure_patks) / num_paths * 100
         func_secure_rate = sum(func_secure_patks) / num_paths * 100
+        # secure_when_func_rate = sum(secure_when_func_patks) / num_paths * 100
 
         print(f'=' * 16)
         print(f'pass@{k}\t{lang or "all"}')
         print(f'functional@{k}\t{functional_rate:.2f}')
         print(f'secure@{k}\t{secure_rate:.2f}')
         print(f'functional_secure@{k}\t{func_secure_rate:.2f}')
+        # print(f'secure_when_functional@{k}\t{secure_when_func_rate:.2f}')
         print(f'=' * 16)
 
         return functional_rate, secure_rate, func_secure_rate
 
+    def _parse_raw_write_task(self, raw_file: str) -> None:
+        task_code = self._parse_raw_file(raw_file)
+        task_file = raw_file.replace('_raw.', '_task.')
+        with open(task_file, 'w') as f:
+            f.write(task_code)
+
     def parse_generated(self) -> None:
         # python cweval/evaluate.py parse_generated --eval_path evals/eval_241110_014704
         # parse the raw_files to get the task_files
-        for raw_file in natsorted(self.raw_files):
-            task_code = self._parse_raw_file(raw_file)
-            task_file = raw_file.replace('_raw.', '_task.')
-            self.task_files.append(task_file)
-            with open(task_file, 'w') as f:
-                f.write(task_code)
+        if self.num_proc == 1:
+            for raw_file in natsorted(self.raw_files):
+                task_code = self._parse_raw_file(raw_file)
+                task_file = raw_file.replace('_raw.', '_task.')
+                self.task_files.append(task_file)
+                with open(task_file, 'w') as f:
+                    f.write(task_code)
+        else:
+            print(
+                f'Parsing {len(self.raw_files)} files with {self.num_proc * 2} processes',
+                flush=True,
+            )
+            p_map(
+                self._parse_raw_write_task, self.raw_files, num_cpus=self.num_proc * 2
+            )
 
     def compile_parsed(self) -> None:
         # python cweval/evaluate.py compile_parsed --eval_path evals/eval_241110_014704
@@ -339,7 +374,7 @@ class Evaler:
         if prepare:
             self.parse_generated()
             self.compile_parsed()
-
+        print(f'Run docker', flush=True)
         timestamp = datetime.datetime.now().strftime('%y%m%d_%H%M%S')
         container = Container(
             image='co1lin/cweval',
