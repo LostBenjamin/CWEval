@@ -33,7 +33,7 @@ from natsort import natsorted
 from p_tqdm import p_map
 from tqdm import tqdm
 
-from cweval.ai import make_aiapi
+from cweval.ai import AIAPI
 from cweval.commons import BENCHMARK_DIR, LANGS
 from cweval.ppt import make_prompt
 
@@ -46,7 +46,7 @@ class Gener:
     def __init__(
         self,
         eval_dir: str = '',
-        ai: str = 'openai:gpt-4o-mini-2024-07-18',
+        model: str = 'gpt-4o-mini-2024-07-18',
         ppt: str = 'direct',
         num_proc: int = 8,
         langs: List[str] = LANGS,
@@ -55,10 +55,10 @@ class Gener:
         # AI parameters
         n: int = 20,
         max_completion_tokens: int = 2048,
-        temperature: float = 1.0,
+        temperature: float = 0.8,
         **kwargs,
     ):
-        self.ai = ai
+        self.model = model
         self.ppt = ppt
         self.num_proc = num_proc
         self.langs = langs
@@ -163,7 +163,7 @@ class Gener:
             )
             return
 
-        aiapi = make_aiapi(ai, rank, **ai_kwargs)
+        aiapi = AIAPI(ai, **ai_kwargs)
         prompt = make_prompt(ppt)
         resps = prompt.req_ai(
             aiapi,
@@ -182,7 +182,7 @@ class Gener:
     def gen(self) -> None:
         p_map(
             self._gen_case,
-            [self.ai] * len(self.cases),
+            [self.model] * len(self.cases),
             [self.ppt] * len(self.cases),
             self.cases.values(),
             [self.ai_kwargs] * len(self.cases),

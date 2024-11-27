@@ -12,3 +12,4 @@ argon2-cffi
 pycryptodome
 docker
 numpy
+p_tqdm
