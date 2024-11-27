@@ -11,4 +11,5 @@ jobs:
     uses: ./.github/workflows/build_push_docker.yml
     with:
       name: cweval
+      dir_path: .
     secrets: inherit
