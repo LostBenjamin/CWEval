@@ -6,12 +6,13 @@ LABEL maintainer="mail@co1in.me"
 RUN set -ex; source ~/miniforge3/bin/activate; mamba create -y -n cweval python=3.10; rm -rf /home/ubuntu/.cache
 
 # copy build_docker/CWEval to /home/ubuntu/CWEval in the container
-COPY --chown=ubuntu:ubuntu build_docker/CWEval /home/ubuntu/CWEval
+COPY --chown=ubuntu:ubuntu . /home/ubuntu/CWEval
 WORKDIR /home/ubuntu/CWEval
 
 # python
 RUN set -ex; source ~/miniforge3/bin/activate; conda activate cweval; \
     pip install -r requirements/core.txt; \
+    pip install -r requirements/ai.txt; \
     rm -rf /home/ubuntu/.cache
 
 # C

@@ -422,10 +422,13 @@ python cweval/evaluate.py run_tests --eval_path {eval_path_in_docker} --num_proc
             )  # /home/ubuntu/CWEval/evals/eval_241110_014704/generated_X/res.json
             container.copy_from(res_json_path_in_docker, res_json_path)
 
-    def pipeline(self) -> None:
+    def pipeline(self, docker: bool = True) -> None:
         self.parse_generated()
         self.compile_parsed()
-        self.run_tests_in_docker(prepare=False)
+        if docker:
+            self.run_tests_in_docker(prepare=False)
+        else:
+            self.run_tests()
         self._merge_results()
         self.report_pass_at_k(mode='auto')
 

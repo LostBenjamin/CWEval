@@ -18,5 +18,5 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
 
-      - name: Test python benchmark
-        run: pytest -x -n 8 benchmark/core/py
+      - name: Test format
+        run: pytest benchmark/format_test.py -s
