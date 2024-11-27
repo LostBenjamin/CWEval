@@ -1,0 +1,14 @@
+name: docker
+
+on:
+  push:
+    branches:
+      - 'main'
+
+
+jobs:
+  cweval:
+    uses: ./.github/workflows/build_push_docker.yml
+    with:
+      name: cweval
+    secrets: inherit

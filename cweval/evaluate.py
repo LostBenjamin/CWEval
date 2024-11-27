@@ -340,7 +340,7 @@ class Evaler:
                 file_res_list = run_in_subprocess(run_tests, generated_path)
                 all_gen_results.append(file_res_list)
         else:
-            mp.set_start_method('spawn')
+            mp.set_start_method('spawn', force=True)
             all_gen_results: List[TestFileResult] = []
             # fix mysterious hanging issue
             for i in range(math.ceil(len(self.generated_paths) / self.num_proc)):
@@ -425,6 +425,9 @@ python cweval/evaluate.py run_tests --eval_path {eval_path_in_docker} --num_proc
     def pipeline(self, docker: bool = True) -> None:
         self.parse_generated()
         self.compile_parsed()
+        if isinstance(docker, str):
+            docker = docker.lower() == 'true'
+        assert isinstance(docker, bool), f'{docker = }'
         if docker:
             self.run_tests_in_docker(prepare=False)
         else:
