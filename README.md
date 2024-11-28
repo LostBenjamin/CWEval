@@ -1,12 +1,12 @@
-# CWEval
+# 🛡 CWEval
 
-Is the LLM-generated code functional ***and*** secure? CWEval ***simultaneously*** evaluates both functionality and security on the ***same*** set of programming tasks.
+Is the LLM-generated code 🔧 functional ***and*** ⛑️ secure? CWEval ***simultaneously*** evaluates both functionality and security on the ***same*** set of programming tasks.
 
 ## 🚀 Quick Start
 
-The quickest way to start is to use our pre-built docker image:
+🐳 Use our pre-built docker image to get started in only three steps: (1) entering the docker container, (2) generating LLM responses, and (3) evaluating LLM responses.
 
-### Prepare the environment
+### 1. Prepare the environment
 
 Pull the docker image:
 
@@ -25,9 +25,9 @@ docker run --name cweval --rm -it --net host co1lin/cweval zsh
 # -v /path/on/host:/host_dir : map /path/on/host to /host_dir in the container so that we can transfer files between the host and the container through this shared folder
 ```
 
-By default, you will be in the directory `/home/ubuntu/CWEval` ; if not, enter this directory.
+By default, you will be in the directory `/home/ubuntu/CWEval` in the container; if not, enter this directory.
 
-Setup the environment variables by:
+Setup environment variables by:
 
 ```bash
 source .env
@@ -45,15 +45,15 @@ pytest benchmark/ -x -n 24
 # ^^^ You should see all tests are passed; otherwise, the environment has errors, then please open an issue
 ```
 
-### Generate LLM responses
+### 2. Generate LLM responses
 
-Once the environment is ready, we can generate LLM responses with various models.
+Once the environment is ready, we can generate LLM responses with various models by the command `python cweval/generate.py gen --model <model_name>`.
 
 We use [litellm](https://github.com/BerriAI/litellm) to query LLMs.  The command line argument `--model <model_name>` will be passed to `litellm.completion(model=<model_name>, ...)`. Refer [docs of litellm](https://docs.litellm.ai) ([Supported Models & Providers](https://docs.litellm.ai/docs/providers)) to know how to specify the value for `--model`.
 
-Here are some examples of tested models and providers. Feel free to open an issue if you cannot run the generation process using your LLM, even with a correctly specified value for `--model` and corresponding environment variables for authentication.
+Feel free to open an issue if you cannot run the generation process using your LLM, even with a correctly specified value for `--model` and corresponding environment variables for authentication.
 
-Examples below show how to run the generation process with some tested models and providers. You can consider changing the following parameters:
+Examples below show how to run the generation process with some tested models and providers. They also show the following changable parameters:
 
 - `--n` : number of samples to generate for each programming task; useful for computing pass@k for various values of k (setting n ≥ 2k).
 - `--temperature` : temperature for LLM generation
@@ -86,7 +86,9 @@ export OPENAI_API_KEY=sk-xxxxxx # set a dummy one
 python cweval/generate.py gen --n 3 --temperature 0.8 --num_proc 16 --eval_path evals/eval_dscv2lite_t8 --model openai/deepseek-ai/DeepSeek-Coder-V2-Lite-Instruct --api_base http://localhost:8000/v1
 ```
 
-### Evaluate LLM Responses
+### 3. Evaluate LLM Responses
+
+We can evaluate the generated responses by:
 
 ```bash
 # set --eval_path to the one used in generation
@@ -101,7 +103,7 @@ python cweval/evaluate.py report_pass_at_k --eval_path evals/eval_4omini_t8
 
 Detailed evaluation results are stored in `<eval_path>/res_all.json` (e.g. `evals/eval_4omini_t8/res_all.json`).
 
-## Development
+## 💻 Development
 
 ### Python (required)
 
@@ -169,7 +171,14 @@ go install golang.org/x/tools/cmd/goimports@latest
 export PATH=$PATH:~/go/bin
 ```
 
+### Sanity Test
 
-### [`pre-commit`](https://pre-commit.com)
+Test oracles and reference solutions in the benchmark should work well with each other.
+
+```bash
+pytest benchmark -x -n 24
+```
+
+### Note: [`pre-commit`](https://pre-commit.com)
 
 [`pre-commit`](https://pre-commit.com) is used to unify the format of all files. Basically after installing it, the linters will check the changed files before each commit. If there is any violation, it will block the commit and fix them. Then you need to `git add` the changes and `git commit` again.
