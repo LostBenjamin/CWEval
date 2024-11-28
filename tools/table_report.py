@@ -137,7 +137,7 @@ functional_secure@10    100.00
 """
 
 
-def table_report(input_path: str = '') -> pd.DataFrame:
+def table_report(input_path: str = '', return_df: bool = False) -> pd.DataFrame | None:
     if not input_path:
         log_data = LOG_DATA
     else:
@@ -193,8 +193,8 @@ def table_report(input_path: str = '') -> pd.DataFrame:
     print(dfp.to_csv())
     # print csv
     # print(df.to_csv())
-    # from IPython import embed; embed()
-    return df
+    if return_df:
+        return df
 
 
 def check_res():
@@ -228,7 +228,7 @@ def merge_report():
             cmd = f"python cweval/evaluate.py report_pass_at_k --eval_path {eval_path} | tee {eval_path}/report.log"
             print(cmd, flush=True)
             exec_cmd_shell(cmd)
-            df = table_report(f"{eval_path}/report.log")
+            df = table_report(f"{eval_path}/report.log", return_df=True)
             if model not in model_dfs:
                 model_dfs[model] = {}
             model_dfs[model][tstr] = df

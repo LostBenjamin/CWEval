@@ -43,6 +43,7 @@ RUN set -ex; \
     export PATH=$PATH:/usr/local/go/bin; \
     cd /home/ubuntu/CWEval; \
     go mod download; \
+    go install golang.org/x/tools/cmd/goimports@latest; \
     rm -rf /home/ubuntu/.cache
 
 

@@ -1,11 +1,105 @@
 # CWEval
 
-## Setup
+Is the LLM-generated code functional ***and*** secure? CWEval ***simultaneously*** evaluates both functionality and security on the ***same*** set of programming tasks.
+
+## 🚀 Quick Start
+
+The quickest way to start is to use our pre-built docker image:
+
+### Prepare the environment
+
+Pull the docker image:
 
 ```bash
-# TODO
+docker pull co1lin/cweval # from Docker Hub
+# docker pull ghcr.io/co1lin/cweval:latest # from GitHub Container Registry
 ```
 
+
+Start a container and get a `zsh` shell to work in it:
+
+```bash
+docker run --name cweval --rm -it --net host co1lin/cweval zsh
+# --rm : delete the container after this command exits
+# --net host : use the network on host; convenient for querying a LLM locally hosted on the host machine
+# -v /path/on/host:/host_dir : map /path/on/host to /host_dir in the container so that we can transfer files between the host and the container through this shared folder
+```
+
+By default, you will be in the directory `/home/ubuntu/CWEval` ; if not, enter this directory.
+
+Setup the environment variables by:
+
+```bash
+source .env
+```
+
+(Optional) The we can do some sanity checks:
+
+```bash
+# compile reference solutions; it will output some logs, but no Python exception should be raised
+python cweval/commons.py compile_all_in --path benchmark/
+echo $? # "0" is expected here; check if the command above exits normally
+
+# run tests on reference solutions; `-n <int>` is the number of workers which can speed up the testing by parallelism
+pytest benchmark/ -x -n 24
+# ^^^ You should see all tests are passed; otherwise, the environment has errors, then please open an issue
+```
+
+### Generate LLM responses
+
+Once the environment is ready, we can generate LLM responses with various models.
+
+We use [litellm](https://github.com/BerriAI/litellm) to query LLMs.  The command line argument `--model <model_name>` will be passed to `litellm.completion(model=<model_name>, ...)`. Refer [docs of litellm](https://docs.litellm.ai) ([Supported Models & Providers](https://docs.litellm.ai/docs/providers)) to know how to specify the value for `--model`.
+
+Here are some examples of tested models and providers. Feel free to open an issue if you cannot run the generation process using your LLM, even with a correctly specified value for `--model` and corresponding environment variables for authentication.
+
+Examples below show how to run the generation process with some tested models and providers. You can consider changing the following parameters:
+
+- `--n` : number of samples to generate for each programming task; useful for computing pass@k for various values of k (setting n ≥ 2k).
+- `--temperature` : temperature for LLM generation
+- `--num_proc` : number of parallel processes to use for generation, which can speed up the generation process; however, note that your LLM service provider may have rate limits, so setting a very large value can lead to failure
+- `--eval_path` : directory path for both generation and evaluation; LLM responses will be dumped there; if not specified, a date-based path will be automatically generated
+
+```bash
+# OpenAI
+export OPENAI_API_KEY=sk-xxxxxx
+python cweval/generate.py gen --n 3 --temperature 0.8 --num_proc 16 --eval_path evals/eval_4omini_t8 --model gpt-4o-mini-2024-07-18
+
+# Gemini through Google AI Studio
+export GEMINI_API_KEY=AIxxxxxx
+python cweval/generate.py gen --n 3 --temperature 0.8 --num_proc 16 --eval_path evals/eval_gflash_t8 --model gemini/gemini-1.5-flash-002
+
+# AWS bedrock
+export AWS_ACCESS_KEY_ID=xxxxxx
+export AWS_SECRET_ACCESS_KEY=xxxxxx
+export AWS_REGION_NAME=us-east-1
+
+python cweval/generate.py gen --n 3 --temperature 0.8 --num_proc 16 --eval_path evals/eval_haiku_t8 --model bedrock/anthropic.claude-3-5-haiku-20241022-v1:0
+
+python cweval/generate.py gen --n 3 --temperature 0.8 --num_proc 16 --eval_path evals/eval_llama3b_t8 --model bedrock/us.meta.llama3-2-3b-instruct-v1:0
+
+# local serving with vLLM
+# pip install vllm
+vllm serve deepseek-ai/DeepSeek-Coder-V2-Lite-Instruct --trust-remote-code --tensor-parallel-size 4 --max-model-len 16384 --disable-log-requests # in another shell session
+
+export OPENAI_API_KEY=sk-xxxxxx # set a dummy one
+python cweval/generate.py gen --n 3 --temperature 0.8 --num_proc 16 --eval_path evals/eval_dscv2lite_t8 --model openai/deepseek-ai/DeepSeek-Coder-V2-Lite-Instruct --api_base http://localhost:8000/v1
+```
+
+### Evaluate LLM Responses
+
+```bash
+# set --eval_path to the one used in generation
+python cweval/evaluate.py pipeline --eval_path evals/eval_4omini_t8 --num_proc 20
+```
+
+pass@k results will be printed out at the end. You can run the following command to print it again:
+
+```bash
+python cweval/evaluate.py report_pass_at_k --eval_path evals/eval_4omini_t8
+```
+
+Detailed evaluation results are stored in `<eval_path>/res_all.json` (e.g. `evals/eval_4omini_t8/res_all.json`).
 
 ## Development
 
@@ -22,8 +116,9 @@ conda activate cweval
 
 # 3. Install core dependencies
 pip install -r requirements/core.txt
+pip install -r requirements/ai.txt
 
-# 4. Setup dependencies for development
+# 4. Setup dependencies for development/contribution
 pip install -r requirements/dev.txt
 pre-commit install
 
@@ -38,7 +133,7 @@ export PYTHONPATH=$PYTHONPATH:$(pwd)
 ### C
 
 ```bash
-mamba install libarchive
+mamba install libarchive zlib
 sudo apt install libjwt-dev
 ```
 
@@ -47,7 +142,7 @@ sudo apt install libjwt-dev
 
 ```bash
 # 1. Install nvm according to https://github.com/nvm-sh/nvm?tab=readme-ov-file#install--update-script
-# curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
 
 # 2. Configure node.js
 nvm install --lts
@@ -63,6 +158,13 @@ export NODE_PATH=$(npm root -g)
 ### Golang
 
 ```bash
+# 1. Install golang
+wget https://go.dev/dl/go1.23.3.linux-amd64.tar.gz
+sudo tar -C /usr/local -xzf go1.23.3.linux-amd64.tar.gz
+export PATH=$PATH:/usr/local/go/bin
+
+# 2. Install dependencies
+go mod download
 go install golang.org/x/tools/cmd/goimports@latest
 export PATH=$PATH:~/go/bin
 ```

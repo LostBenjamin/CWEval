@@ -45,7 +45,7 @@ class Gener:
 
     def __init__(
         self,
-        eval_dir: str = '',
+        eval_path: str = '',
         model: str = 'gpt-4o-mini-2024-07-18',
         ppt: str = 'direct',
         num_proc: int = 8,
@@ -72,15 +72,15 @@ class Gener:
             **kwargs,
         }
 
-        if not eval_dir:
-            self.eval_dir = os.path.join(
+        if not eval_path:
+            self.eval_path = os.path.join(
                 'evals', f'eval_{datetime.datetime.now().strftime("%y%m%d_%H%M%S")}'
             )
         else:
-            # check if eval_dir exists
-            if os.path.exists(eval_dir):
+            # check if eval_path exists
+            if os.path.exists(eval_path):
                 flag = (
-                    input(f'{eval_dir} already exists, overwrite? (y/n): ')
+                    input(f'{eval_path} already exists, overwrite? (y/n): ')
                     .strip()
                     .lower()
                 )
@@ -88,7 +88,7 @@ class Gener:
                     print(f'Exiting...')
                     exit(0)
 
-            self.eval_dir = eval_dir
+            self.eval_path = eval_path
 
         self.cases = self._get_cases()
 
@@ -130,7 +130,7 @@ class Gener:
 
                 rel_task_file_path = os.path.relpath(task_file_path, BENCHMARK_DIR)
                 gen_file_path_template = os.path.join(
-                    self.eval_dir,
+                    self.eval_path,
                     'generated_{index}',
                     rel_task_file_path.replace('_task', '_raw'),
                 )
