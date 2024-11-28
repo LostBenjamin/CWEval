@@ -47,6 +47,7 @@ RUN set -ex; source ~/miniforge3/bin/activate; conda activate cweval; \
 # golang deps
 RUN set -ex; \
     cd /home/ubuntu/CWEval; \
+    export PATH=$PATH:/usr/local/go/bin \
     go mod download; \
     rm -rf /home/ubuntu/.cache
 
