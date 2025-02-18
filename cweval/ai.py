@@ -1,10 +1,23 @@
 import abc
-import os
+import subprocess
 from typing import Dict, List
 
-import litellm
-
-# litellm.set_verbose = True
+CMD = '''docker run -it \
+    --pull=always \
+    -e SANDBOX_RUNTIME_CONTAINER_IMAGE=docker.all-hands.dev/all-hands-ai/runtime:0.24-nikolaik \
+    -e SANDBOX_USER_ID=$(id -u) \
+    -e WORKSPACE_MOUNT_PATH=$WORKSPACE_BASE \
+    -e LLM_API_KEY=$LLM_API_KEY \
+    -e LLM_MODEL=$LLM_MODEL \
+    -e LOG_ALL_EVENTS=true \
+    -v $WORKSPACE_BASE:/opt/workspace_base \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    -v ~/.openhands-state:/.openhands-state \
+    --add-host host.docker.internal:host-gateway \
+    --name openhands-app-$(date +%Y%m%d%H%M%S) \
+    docker.all-hands.dev/all-hands-ai/openhands:0.24 \
+    python -m openhands.core.main -t "{}"
+'''
 
 
 class AIAPI(abc.ABC):
@@ -15,39 +28,16 @@ class AIAPI(abc.ABC):
         **kwargs,
     ) -> None:
         self.model = model
-        self.provider = litellm.get_llm_provider(model)[1]
         self.req_kwargs = kwargs
 
     def send_message(self, messages: List[Dict[str, str]], **kwargs) -> List[str]:
         all_kwargs = self.req_kwargs.copy()
         all_kwargs.update(kwargs)
 
-        if self.provider == ['gemini', 'vertex_ai'] and 'gemini' in self.model:
-            all_kwargs['safety_settings'] = [
-                {
-                    "category": "HARM_CATEGORY_HARASSMENT",
-                    "threshold": "BLOCK_NONE",
-                },
-                {
-                    "category": "HARM_CATEGORY_HATE_SPEECH",
-                    "threshold": "BLOCK_NONE",
-                },
-                {
-                    "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-                    "threshold": "BLOCK_NONE",
-                },
-                {
-                    "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
-                    "threshold": "BLOCK_NONE",
-                },
-            ]
-
         n_samples = all_kwargs.pop('n', 1)
-        max_n_per_req: int = {
-            'openai': 128,
-            'gemini': 8,
-            'anthropic': 10,
-        }.get(self.provider, 1)
+        max_n_per_req = 1
+        message = messages[0]['content'].replace("```", "\`\`\`")
+        cmd = CMD.format(message)
 
         resp: List[str] = []
         for i, idx in enumerate(range(0, n_samples, max_n_per_req)):
@@ -57,14 +47,7 @@ class AIAPI(abc.ABC):
             else:
                 all_kwargs.pop('n', 1)
 
-            comp = litellm.completion(
-                model=self.model,
-                messages=messages,
-                num_retries=3,
-                **all_kwargs,
-            )
-            resp_this = [c.message.content for c in comp.choices]
-            assert len(resp_this) == n_this, f'{resp_this = } != {n_this = }'
-            resp.extend(resp_this)
+            output = subprocess.check_output(cmd, shell=True)
+            resp.append(output.decode('utf-8'))
 
         return resp
