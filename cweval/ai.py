@@ -3,6 +3,7 @@ import os
 from typing import Dict, List
 
 from together import Together
+
 client = Together()
 
 
@@ -21,7 +22,7 @@ class AIAPI(abc.ABC):
         all_kwargs.update(kwargs)
 
         n_samples = all_kwargs.pop('n', 1)
-        max_n_per_req: int = 1
+        max_n_per_req: int = 10
 
         resp: List[str] = []
         for i, idx in enumerate(range(0, n_samples, max_n_per_req)):
