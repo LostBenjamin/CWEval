@@ -46,6 +46,7 @@ class AIAPI(abc.ABC):
         max_n_per_req: int = {
             'openai': 128,
             'gemini': 8,
+            'anthropic': 10,
         }.get(self.provider, 1)
 
         resp: List[str] = []
