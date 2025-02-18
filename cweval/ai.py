@@ -14,7 +14,7 @@ CMD = '''docker run -it \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v ~/.openhands-state:/.openhands-state \
     --add-host host.docker.internal:host-gateway \
-    --name openhands-app-$(date +%Y%m%d%H%M%S) \
+    --name openhands-app-{} \
     docker.all-hands.dev/all-hands-ai/openhands:0.24 \
     python -m openhands.core.main -t "{}"
 '''
@@ -37,7 +37,7 @@ class AIAPI(abc.ABC):
         n_samples = all_kwargs.pop('n', 1)
         max_n_per_req = 1
         message = messages[0]['content'].replace("```", "\`\`\`")
-        cmd = CMD.format(message)
+        cmd = CMD.format(self.req_kwargs['rank'], message)
 
         resp: List[str] = []
         for i, idx in enumerate(range(0, n_samples, max_n_per_req)):

@@ -163,7 +163,7 @@ class Gener:
             )
             return
 
-        aiapi = AIAPI(ai, **ai_kwargs)
+        aiapi = AIAPI(ai, rank=rank, **ai_kwargs)
         prompt = make_prompt(ppt)
         resps = prompt.req_ai(
             aiapi,
