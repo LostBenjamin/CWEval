@@ -94,7 +94,7 @@ class Evaler:
         with open(raw_file_path, 'r') as f:
             raw_str = f.read()
 
-        raw_code = get_code_from(raw_str, only_first=True)
+        raw_code = get_code_from(raw_str, only_last=True)
         if not raw_code:
             raw_code = raw_str
 

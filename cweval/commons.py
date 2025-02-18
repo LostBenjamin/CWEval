@@ -209,7 +209,7 @@ def get_code_from(
         # end if for this code block
         i_line += 1
     # end while for all code blocks
-    if only_last:
+    if only_last and len(code_blocks) > 0:
         return code_blocks[-1]
     return '\n'.join(code_blocks)
 
