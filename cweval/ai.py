@@ -2,7 +2,7 @@ import abc
 import subprocess
 from typing import Dict, List
 
-CMD = '''docker run -it \
+CMD = '''docker run -it --rm \
     --pull=always \
     -e SANDBOX_RUNTIME_CONTAINER_IMAGE=docker.all-hands.dev/all-hands-ai/runtime:0.24-nikolaik \
     -e SANDBOX_USER_ID=$(id -u) \
@@ -11,12 +11,12 @@ CMD = '''docker run -it \
     -e LLM_MODEL=$LLM_MODEL \
     -e LOG_ALL_EVENTS=true \
     -v $WORKSPACE_BASE:/opt/workspace_base \
-    -v /var/run/docker.sock:/var/run/docker.sock \
+    -v ./{}:/task.txt \
     -v ~/.openhands-state:/.openhands-state \
-    --add-host host.docker.internal:host-gateway \
+    -v /var/run/docker.sock:/var/run/docker.sock \
     --name openhands-app-{} \
     docker.all-hands.dev/all-hands-ai/openhands:0.24 \
-    python -m openhands.core.main -t "{}"
+    python -m openhands.core.main -f /task.txt
 '''
 
 
@@ -36,8 +36,13 @@ class AIAPI(abc.ABC):
 
         n_samples = all_kwargs.pop('n', 1)
         max_n_per_req = 1
-        message = messages[0]['content'].replace("```", "\`\`\`")
-        cmd = CMD.format(self.req_kwargs['rank'], message)
+
+        rank = self.req_kwargs['rank']
+        message = messages[0]['content']
+        fname = f'tmp_{rank}.txt'
+        with open(fname, 'w') as f:
+            f.write(message)
+        cmd = CMD.format(fname, rank)
 
         resp: List[str] = []
         for i, idx in enumerate(range(0, n_samples, max_n_per_req)):
@@ -49,5 +54,8 @@ class AIAPI(abc.ABC):
 
             output = subprocess.check_output(cmd, shell=True)
             resp.append(output.decode('utf-8'))
+
+            # subprocess.run(cmd, shell=True)
+            # resp.append('')
 
         return resp

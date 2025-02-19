@@ -26,6 +26,7 @@ import datetime
 import json
 import os
 import shutil
+from multiprocessing import Pool
 from typing import Any, Dict, List
 
 import fire
@@ -180,15 +181,26 @@ class Gener:
                 f.write(resp)
 
     def gen(self) -> None:
-        p_map(
-            self._gen_case,
-            [self.model] * len(self.cases),
-            [self.ppt] * len(self.cases),
-            self.cases.values(),
-            [self.ai_kwargs] * len(self.cases),
-            range(len(self.cases)),  # workaround: index as rank
-            num_cpus=self.num_proc,
-        )
+        # p_map(
+        # self._gen_case,
+        # [self.model] * len(self.cases),
+        # [self.ppt] * len(self.cases),
+        # self.cases.values(),
+        # [self.ai_kwargs] * len(self.cases),
+        # range(len(self.cases)),
+        # num_cpus=self.num_proc,
+        # )
+        with Pool(self.num_proc) as pool:
+            pool.starmap(
+                self._gen_case,
+                zip(
+                    [self.model] * len(self.cases),
+                    [self.ppt] * len(self.cases),
+                    self.cases.values(),
+                    [self.ai_kwargs] * len(self.cases),
+                    range(len(self.cases)),
+                ),
+            )
 
 
 if __name__ == "__main__":
