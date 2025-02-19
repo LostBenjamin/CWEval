@@ -1,10 +1,11 @@
 import abc
 import os
+import time
 from typing import Dict, List
 
-from together import Together
+import together
 
-client = Together()
+client = together.Together()
 
 
 class AIAPI(abc.ABC):
@@ -20,6 +21,8 @@ class AIAPI(abc.ABC):
     def send_message(self, messages: List[Dict[str, str]], **kwargs) -> List[str]:
         all_kwargs = self.req_kwargs.copy()
         all_kwargs.update(kwargs)
+        if 'DeepSeek-R1' in self.model:
+            all_kwargs['max_completion_tokens'] = 30000
 
         n_samples = all_kwargs.pop('n', 1)
         max_n_per_req: int = 10
@@ -32,13 +35,17 @@ class AIAPI(abc.ABC):
             else:
                 all_kwargs.pop('n', 1)
 
-            comp = client.chat.completions.create(
-                model=self.model,
-                messages=messages,
-                num_retries=3,
-                max_tokens=30000,
-                **all_kwargs,
-            )
+            while True:
+                try:
+                    comp = client.chat.completions.create(
+                        model=self.model,
+                        messages=messages,
+                        num_retries=3,
+                        **all_kwargs,
+                    )
+                    break
+                except together.error.ServiceUnavailableError:
+                    time.sleep(10)
             resp_this = [c.message.content for c in comp.choices]
             assert len(resp_this) == n_this, f'{resp_this = } != {n_this = }'
             resp.extend(resp_this)
