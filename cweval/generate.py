@@ -181,26 +181,15 @@ class Gener:
                 f.write(resp)
 
     def gen(self) -> None:
-        # p_map(
-        # self._gen_case,
-        # [self.model] * len(self.cases),
-        # [self.ppt] * len(self.cases),
-        # self.cases.values(),
-        # [self.ai_kwargs] * len(self.cases),
-        # range(len(self.cases)),
-        # num_cpus=self.num_proc,
-        # )
-        with Pool(self.num_proc) as pool:
-            pool.starmap(
-                self._gen_case,
-                zip(
-                    [self.model] * len(self.cases),
-                    [self.ppt] * len(self.cases),
-                    self.cases.values(),
-                    [self.ai_kwargs] * len(self.cases),
-                    range(len(self.cases)),
-                ),
-            )
+        arguments = zip(
+            [self.model] * len(self.cases),
+            [self.ppt] * len(self.cases),
+            self.cases.values(),
+            [self.ai_kwargs] * len(self.cases),
+            range(len(self.cases)),
+        )
+        for ai, ppt, case, ai_kwargs, rank in arguments:
+            self._gen_case(ai, ppt, case, ai_kwargs, rank)
 
 
 if __name__ == "__main__":
