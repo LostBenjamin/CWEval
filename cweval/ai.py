@@ -14,7 +14,8 @@ CMD = '''docker run -it --rm \
     -v ./{}:/task.txt \
     -v ~/.openhands-state:/.openhands-state \
     -v /var/run/docker.sock:/var/run/docker.sock \
-    --name openhands-app-{} \
+    --add-host host.docker.internal:host-gateway \
+    --name openhands-myapp-{} \
     docker.all-hands.dev/all-hands-ai/openhands:0.24 \
     python -m openhands.core.main -f /task.txt
 '''
