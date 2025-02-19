@@ -15,6 +15,7 @@ class AIAPI(abc.ABC):
         **kwargs,
     ) -> None:
         self.model = model
+        self.is_o = self.model.startswith('o1') or self.model.startswith('o3')
         self.provider = litellm.get_llm_provider(model)[1]
         self.req_kwargs = kwargs
 
@@ -61,7 +62,7 @@ class AIAPI(abc.ABC):
                 model=self.model,
                 messages=messages,
                 num_retries=3,
-                **all_kwargs,
+                **({} if self.is_o else all_kwargs),
             )
             resp_this = [c.message.content for c in comp.choices]
             assert len(resp_this) == n_this, f'{resp_this = } != {n_this = }'
