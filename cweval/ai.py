@@ -39,6 +39,24 @@ CMDO = '''docker run -it --rm \
     python -m openhands.core.main -f /task.txt
 '''
 
+CMDO1MINI = '''docker run -it --rm \
+    -e SANDBOX_RUNTIME_CONTAINER_IMAGE=docker.all-hands.dev/all-hands-ai/runtime:0.24-nikolaik \
+    -e SANDBOX_USER_ID=$(id -u) \
+    -e WORKSPACE_MOUNT_PATH=$WORKSPACE_BASE \
+    -e LLM_API_KEY=$LLM_API_KEY \
+    -e LLM_MODEL=$LLM_MODEL \
+    -e LLM_MAX_OUTPUT_TOKENS=30000 \
+    -e LOG_ALL_EVENTS=true \
+    -v $WORKSPACE_BASE:/opt/workspace_base \
+    -v ./{}:/task.txt \
+    -v ~/.openhands-state:/.openhands-state \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    --add-host host.docker.internal:host-gateway \
+    --name openhands-myapp-{} \
+    openhands-o1-mini \
+    python -m openhands.core.main -f /task.txt
+'''
+
 
 class AIAPI(abc.ABC):
 
@@ -62,7 +80,9 @@ class AIAPI(abc.ABC):
         fname = f'./tmp_{rank}.txt'
         with open(fname, 'w') as f:
             f.write(message)
-        if 'o1' in self.model or 'o3' in self.model:
+        if 'o1-mini' in self.model:
+            cmd = CMDO1MINI.format(fname, rank)
+        elif 'o1' in self.model or 'o3' in self.model:
             cmd = CMDO.format(fname, rank)
         else:
             cmd = CMD.format(fname, rank)
