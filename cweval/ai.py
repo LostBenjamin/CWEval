@@ -65,6 +65,7 @@ CMDO1 = '''docker run -it --rm \
     -e LLM_MODEL=$LLM_MODEL \
     -e LLM_MAX_OUTPUT_TOKENS=30000 \
     -e LOG_ALL_EVENTS=true \
+    -e MAX_ITERATIONS=1\
     -v $WORKSPACE_BASE:/opt/workspace_base \
     -v ./{}:/task.txt \
     -v ~/.openhands-state:/.openhands-state \
