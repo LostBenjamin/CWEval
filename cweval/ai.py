@@ -20,7 +20,7 @@ CMD = '''docker run -it --rm \
     python -m openhands.core.main -f /task.txt
 '''
 
-CMDO = '''docker run -it --rm \
+CMDO3 = '''docker run -it --rm \
     --pull=always \
     -e SANDBOX_RUNTIME_CONTAINER_IMAGE=docker.all-hands.dev/all-hands-ai/runtime:0.24-nikolaik \
     -e SANDBOX_USER_ID=$(id -u) \
@@ -100,8 +100,10 @@ class AIAPI(abc.ABC):
             f.write(message)
         if 'o1-mini' in self.model:
             cmd = CMDO1MINI.format(fname, rank)
-        elif 'o1' in self.model or 'o3' in self.model:
-            cmd = CMDO.format(fname, rank)
+        elif 'o1' in self.model:
+            cmd = CMDO1.format(fname, rank)
+        elif 'o3' in self.model:
+            cmd = CMDO3.format(fname, rank)
         else:
             cmd = CMD.format(fname, rank)
 
