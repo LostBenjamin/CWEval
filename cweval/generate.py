@@ -188,7 +188,7 @@ class Gener:
             [self.ai_kwargs] * len(self.cases),
             range(len(self.cases)),
         )
-        for ai, ppt, case, ai_kwargs, rank in arguments:
+        for ai, ppt, case, ai_kwargs, rank in tqdm(list(arguments)):
             self._gen_case(ai, ppt, case, ai_kwargs, rank)
 
 
