@@ -8,6 +8,7 @@ CMD = '''docker run -it --rm \
     -e WORKSPACE_MOUNT_PATH=$WORKSPACE_BASE \
     -e LLM_API_KEY=$LLM_API_KEY \
     -e LLM_MODEL=$LLM_MODEL \
+    -e LLM_MAX_OUTPUT_TOKENS=8192 \
     -e LOG_ALL_EVENTS=true \
     -v $WORKSPACE_BASE:/opt/workspace_base \
     -v ./{}:/task.txt \
