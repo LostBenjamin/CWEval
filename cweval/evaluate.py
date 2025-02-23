@@ -252,7 +252,7 @@ class Evaler:
             )
             for func, sec in zip(res['functional'], res['secure']):
                 total_func += func
-                total_func_insecure += func and not sec
+                total_func_insecure += func and sec
 
             # first_50_func_is_secure = []
             # for i, (functional, secure) in enumerate(zip(res['functional'], res['secure'])):
@@ -284,7 +284,7 @@ class Evaler:
         print(f'func@{k}\t{functional_rate:.2f}')
         # print(f'secure@{k}\t{secure_rate:.2f}')
         # print(f'func-sec@{k}\t{func_secure_rate:.2f}')
-        print(f'func-insecure-rate\t{func_insecure_rate:.2f}')
+        print(f'func-sec-rate\t{func_insecure_rate:.2f}')
         # print(f'secure_when_functional@{k}\t{secure_when_func_rate:.2f}')
         print(f'=' * 16)
 
