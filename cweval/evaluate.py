@@ -201,13 +201,14 @@ class Evaler:
         self, k: int = 1, lang: str = '', mode: str = 'auto'
     ) -> Tuple[float, float, float] | None:
         if mode == 'auto':
-            for _lang in [f'core/{_l}' for _l in LANGS] + [f'lang/c'] + ['']:
-                for _k in [
-                    1,
-                    10,
-                    50,
-                ]:
-                    self.report_pass_at_k(_k, _lang, mode='')
+            # for _lang in [f'core/{_l}' for _l in LANGS] + [f'lang/c'] + ['']:
+            #     for _k in [
+            #         1,
+            #         10,
+            #         50,
+            #     ]:
+            #         self.report_pass_at_k(_k, _lang, mode='')
+            self.report_pass_at_k(1, '', mode='')
             return
 
         all_res_json_path = os.path.join(self.eval_path, 'res_all.json')
@@ -231,6 +232,7 @@ class Evaler:
         secure_patks: List[float] = []
         func_secure_patks: List[float] = []
         # secure_when_func_patks: List[float] = []
+        total_func, total_func_insecure = 0, 0
         for path, res in all_res.items():
             functional_patk = pass_at_k(
                 len(res['functional']),
@@ -248,6 +250,9 @@ class Evaler:
                 sum(res['func_secure']),
                 k,
             )
+            for func, sec in zip(res['functional'], res['secure']):
+                total_func += func
+                total_func_insecure += func and not sec
 
             # first_50_func_is_secure = []
             # for i, (functional, secure) in enumerate(zip(res['functional'], res['secure'])):
@@ -271,13 +276,15 @@ class Evaler:
         functional_rate = sum(functional_patks) / num_paths * 100
         secure_rate = sum(secure_patks) / num_paths * 100
         func_secure_rate = sum(func_secure_patks) / num_paths * 100
+        func_insecure_rate = total_func_insecure / total_func * 100
         # secure_when_func_rate = sum(secure_when_func_patks) / num_paths * 100
 
         print(f'=' * 16)
         print(f'pass@{k}\t{lang or "all"}')
         print(f'func@{k}\t{functional_rate:.2f}')
         # print(f'secure@{k}\t{secure_rate:.2f}')
-        print(f'func-sec@{k}\t{func_secure_rate:.2f}')
+        # print(f'func-sec@{k}\t{func_secure_rate:.2f}')
+        print(f'func-insecure-rate\t{func_insecure_rate:.2f}')
         # print(f'secure_when_functional@{k}\t{secure_when_func_rate:.2f}')
         print(f'=' * 16)
 
